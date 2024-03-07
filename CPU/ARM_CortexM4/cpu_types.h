@@ -24,6 +24,6 @@ typedef uint32_t    cpu_uintptr_t;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-extern  cpu_uintptr_t cpu_ctz(cpu_uintptr_t value);
+extern  cpu_uint_t cpu_ctz(cpu_uint_t value);
 
 #endif /*INCLUDED_CPU_TYPES_H*/

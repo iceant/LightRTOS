@@ -77,10 +77,10 @@ int main(void){
     
     os_kernel_init();
     
-    os_thread_init(&thread1, "Thread1", thread1_entry, 10, thread1_stack, sizeof(thread1_stack), 20, 5);
+    os_thread_init(&thread1, "Thread1", thread1_entry, 10, thread1_stack, sizeof(thread1_stack), 20, 10);
     os_thread_startup(&thread1);
 
-    os_thread_init(&thread2, "Thread2", thread1_entry, 20, thread2_stack, sizeof(thread2_stack), 20, 5);
+    os_thread_init(&thread2, "Thread2", thread1_entry, 20, thread2_stack, sizeof(thread2_stack), 20, 10);
     os_thread_startup(&thread2);
 
     os_thread_init(&USART1_RxThread, "USART1_RxThread", USART1_RxThreadEntry, 0, USART1_RxThread_Stack, sizeof(USART1_RxThread_Stack), 20, 10);

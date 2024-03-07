@@ -1,7 +1,7 @@
 #include <os_priority.h>
 #include <assert.h>
 #include <cpu_types.h>
-
+#include <cpu_macros.h>
 ////////////////////////////////////////////////////////////////////////////////
 //// CONSTANTS
 #define OS_UINTPTR_BITS (8*sizeof(os_uintptr_t))

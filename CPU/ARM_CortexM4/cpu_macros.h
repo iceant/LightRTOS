@@ -102,6 +102,40 @@ __STATIC_FORCEINLINE void cpu_set_PRIMASK(cpu_uint_t priMask)
     __ASM volatile ("MSR primask, %0" : : "r" (priMask) : "memory");
 }
 
+
+__STATIC_FORCEINLINE cpu_uint_t cpu_clz(cpu_uint_t value){
+    cpu_uint_t result;
+    __ASM volatile ("clz %0, %1" : "=r" (result) : "r" (value) );
+    return result;
+}
+
+__STATIC_FORCEINLINE cpu_uint_t cpu_rbit(cpu_uint_t value)
+{
+    cpu_uint_t result;
+
+#if ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
+     (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
+     (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1))    )
+    __ASM volatile ("rbit %0, %1" : "=r" (result) : "r" (value) );
+#else
+    uint32_t s = (4U /*sizeof(v)*/ * 8U) - 1U; /* extra shift needed at end */
+
+  result = value;                      /* r will be reversed bits of v; first get LSB of v */
+  for (value >>= 1U; value != 0U; value >>= 1U)
+  {
+    result <<= 1U;
+    result |= value & 1U;
+    s--;
+  }
+  result <<= s;                        /* shift when v's highest bits are zero */
+#endif
+    return result;
+}
+
+//__STATIC_FORCEINLINE cpu_uint_t cpu_ctz(cpu_uint_t value){
+//    return cpu_clz(cpu_rbit(value));
+//}
+
 #endif /* INCLUDED_CPU_MACROS_H */
 
 
