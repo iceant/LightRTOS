@@ -1,19 +1,20 @@
-#ifndef INCLUDED_OS_TICK_H
-#define INCLUDED_OS_TICK_H
+#ifndef INCLUDED_SVCHANDLER_H
+#define INCLUDED_SVCHANDLER_H
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-#ifndef INCLUDED_OS_TYPES_H
-#include <os_types.h>
-#endif /*INCLUDED_OS_TYPES_H*/
+#ifndef INCLUDED_CPU_TYPES_H
+#include <cpu_types.h>
+#endif /* INCLUDED_CPU_TYPES_H */
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-typedef os_uint_t os_tick_t;
+extern cpu_uintptr_t svc_exc_return;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-os_tick_t os_tick_from_millisecond(uint32_t ms);
+void SVC_Handler_C(unsigned  int * svc_args);
 
-#endif /*INCLUDED_OS_TICK_H*/
+#endif /*INCLUDED_SVCHANDLER_H*/

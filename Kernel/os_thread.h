@@ -23,6 +23,9 @@
 #include <os_error.h>
 #endif /*INCLUDED_OS_ERROR_H*/
 
+#ifndef INCLUDED_OS_TIMER_H
+#include <os_timer.h>
+#endif /* INCLUDED_OS_TIMER_H */
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define OS_THREAD_STATE_READY       (1<<0)
@@ -51,7 +54,9 @@ typedef struct os_thread_s{
     os_tick_t init_ticks;
     os_priority_t current_priority;
     os_tick_t remain_ticks;
+    os_list_t ready_node;
     os_list_t wait_node;
+    os_timer_node_t timer_node;
     void (*thread_exit)(struct os_thread_s* thread);
     os_int_t state;
     os_err_t error;
@@ -59,15 +64,29 @@ typedef struct os_thread_s{
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-os_err_t os_thread_init(os_thread_t * thread
-                        , const char* name
-                        , os_thread_entry thread_entry
-                        , void* parameter
-                        , void* stack_address
-                        , os_size_t stack_size
-                        , os_priority_t priority
-                        , os_tick_t init_ticks);
 
+os_err_t os_thread_init(os_thread_t * thread
+        , const char name[OS_NAME_MAX_SIZE]
+        , void (*thread_entry)(void*)
+        , void* parameter
+        , void* stack_addr
+        , os_size_t stack_size
+        , os_priority_t init_priority
+        , os_tick_t init_ticks);
+
+os_err_t os_thread_startup(os_thread_t * thread);
+
+os_thread_t* os_thread_self(void);
+
+os_err_t os_thread_suspend(os_thread_t * thread);
+
+os_err_t os_thread_resume(os_thread_t* thread);
+
+os_err_t os_thread_exit(os_thread_t * thread);
+
+void os_thread_sleep(os_tick_t tick);
+
+void os_thread_mdelay(os_size_t ms);
 
 
 #endif /*INCLUDED_OS_THREAD_H*/

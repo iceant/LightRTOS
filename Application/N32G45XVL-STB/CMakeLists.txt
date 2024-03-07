@@ -13,14 +13,16 @@ option(USE_TLSF "Use TLSF Memory Allocator" ON)
 
 add_definitions(
         -DCPU_TICKS_PER_SECOND=100
-        -DTLSF_MEMORY_POOL_SIZE=10240
+        -DTLSF_MEMORY_POOL_SIZE=5120
         -DCPU_32BIT
+        -DUSE_TLSF
 )
 
 ########################################################################################################################
 add_subdirectory(../../ThirdParty/N32G45x ${CMAKE_CURRENT_BINARY_DIR}/N32G45x)
 add_subdirectory(../../Kernel ${CMAKE_CURRENT_BINARY_DIR}/Kernel)
 add_subdirectory(../../CPU/ARM_CortexM4 ${CMAKE_CURRENT_BINARY_DIR}/CPU)
+add_subdirectory(../../ThirdParty/TLSF-2.4.6 ${CMAKE_CURRENT_BINARY_DIR}/TLSF-2.4.6)
 
 ########################################################################################################################
 

@@ -12,8 +12,13 @@
 #include <string.h>
 #endif /*INCLUDED_STRING_H*/
 
+#ifndef INCLUDED_OS_ERROR_H
+#include <os_error.h>
+#endif /* INCLUDED_OS_ERROR_H */
 ////////////////////////////////////////////////////////////////////////////////
 ////
+int os_memory_init(void);
+
 void* os_memory_alloc(os_size_t nBytes, const char* file, os_size_t line);
 void* os_memory_calloc(os_size_t nCount, os_size_t nBytes, const char* file, os_size_t line);
 void* os_memory_realloc(void* mem, os_size_t nBytes, const char* file, os_size_t line);

@@ -33,5 +33,21 @@
 #include <os_scheduler.h>
 #endif /*INCLUDED_OS_SCHEDULER_H*/
 
+#ifndef INCLUDED_OS_SEM_H
+#include <os_sem.h>
+#endif /* INCLUDED_OS_SEM_H */
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+#define OS_KERNEL_EMODULE_MEMORY        (-1001)
+#define OS_KERNEL_EMODULE_SCHEDULER     (-1002)
+////////////////////////////////////////////////////////////////////////////////
+////
+
+os_err_t os_kernel_init(void);
+
+os_err_t  os_kernel_startup(void);
+
 
 #endif /*INCLUDED_OS_KERNEL_H*/
