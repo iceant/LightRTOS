@@ -1,0 +1,4 @@
+#ifndef INCLUDED_OS_TIMER_H
+#define INCLUDED_OS_TIMER_H
+
+#endif /*INCLUDED_OS_TIMER_H*/

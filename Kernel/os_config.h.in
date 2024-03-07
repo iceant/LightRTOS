@@ -1,0 +1,14 @@
+#ifndef INCLUDED_OS_CONFIG_H
+#define INCLUDED_OS_CONFIG_H
+
+#ifndef OS_NAME_MAX_SIZE
+#define OS_NAME_MAX_SIZE 16
+#endif /*OS_NAME_MAX_SIZE*/
+
+#ifndef OS_TICKS_PER_SECOND
+#define OS_TICKS_PER_SECOND 100
+#endif /*OS_TICKS_PER_SECOND*/
+
+
+
+#endif /*INCLUDED_OS_CONFIG_H*/
