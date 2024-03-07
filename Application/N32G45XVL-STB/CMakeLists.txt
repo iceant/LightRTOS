@@ -13,7 +13,7 @@ option(USE_TLSF "Use TLSF Memory Allocator" ON)
 
 add_definitions(
         -DCPU_TICKS_PER_SECOND=100
-        -DTLSF_MEMORY_POOL_SIZE=5120
+        -DTLSF_MEMORY_POOL_SIZE=10240
         -DCPU_32BIT
         -DUSE_TLSF
 )
