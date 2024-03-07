@@ -133,7 +133,7 @@ os_bool_t os_timer_tick(void){
                     os_timer__insert_no_lock(timer_node);
                 }
                 
-                need_schedule_flag = true;
+                need_schedule_flag = OS_TRUE;
             }
         }
     }

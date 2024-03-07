@@ -40,8 +40,6 @@ static void os_scheduler__SysTickHandler(void){
                 tick_schedule_flag = OS_TRUE;
                 current_thread->state = OS_THREAD_STATE_YIELD;
             }
-        }else{
-            tick_schedule_flag = OS_FALSE;
         }
         
         timer_schedule_flag = os_timer_tick();
