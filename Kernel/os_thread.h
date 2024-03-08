@@ -88,5 +88,6 @@ void os_thread_sleep(os_tick_t tick);
 
 void os_thread_mdelay(os_size_t ms);
 
+os_err_t os_thread_yield(void);
 
 #endif /*INCLUDED_OS_THREAD_H*/

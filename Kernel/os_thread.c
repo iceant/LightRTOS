@@ -97,3 +97,10 @@ void os_thread_mdelay(os_size_t ms)
 {
     os_scheduler_timed_wait(os_thread_self(), os_tick_from_millisecond(ms));
 }
+
+os_err_t os_thread_yield(void){
+    volatile os_thread_t* current_thread = os_scheduler_current_thread();
+    current_thread->state = OS_THREAD_STATE_YIELD;
+    return os_scheduler_schedule();
+}
+

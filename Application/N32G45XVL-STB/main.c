@@ -31,7 +31,8 @@ static void thread1_entry(void* p){
     while(1){
         printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
 //        os_thread_mdelay(timeout_ms);
-        os_thread_sleep(1); /*调用 sleep 会让出 CPU，其它任务会获得执行机会*/
+//        os_thread_sleep(1); /*调用 sleep 会让出 CPU，其它任务会获得执行机会*/
+        os_thread_yield();
     }
 }
 
@@ -87,6 +88,7 @@ int main(void){
      2. 如果 20,10,10 的优先级设置, Thread2 和 Thread3 会交替占用第一优先级，然后才是 Thread1 运行, Thread1 永远在最后
      3. 如果 10,10,10 的优先级设置, 顺序将是 Thread1, Thread2, Thread3 或者 Thread3, Thread2, Thread1
      4. 如果优先级一样，但是 tick 不一样时，tick多的获取的运行时间就多
+     5. 如果线程使用 yield让出 cpu，当前线程会被加入就绪表，在下次调度时会安排执行，如果优先级是 10,20,5 那么Thread2将永远无法获得运行机会，如果是 10,10,5 那么 将编程 Thread3, Thread1, Thread3, Thread2 这样的循环运行
      * */
     os_thread_init(&thread1, "Thread1", thread1_entry, 20, thread1_stack, sizeof(thread1_stack), 10, 10);
     os_thread_startup(&thread1);
@@ -94,7 +96,7 @@ int main(void){
     os_thread_init(&thread2, "Thread2", thread1_entry, 20, thread2_stack, sizeof(thread2_stack), 10, 10);
     os_thread_startup(&thread2);
     
-    os_thread_init(&thread3, "Thread3", thread1_entry, 20, thread3_stack, sizeof(thread3_stack), 10, 20);
+    os_thread_init(&thread3, "Thread3", thread1_entry, 20, thread3_stack, sizeof(thread3_stack), 5, 20);
     os_thread_startup(&thread3);
 
     os_thread_init(&USART1_RxThread, "USART1_RxThread", USART1_RxThreadEntry, 0, USART1_RxThread_Stack, sizeof(USART1_RxThread_Stack), 20, 10);

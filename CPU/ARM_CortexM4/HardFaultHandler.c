@@ -18,13 +18,13 @@
 
 
 
-void show_cfsr(unsigned long cfsr);
+static void show_cfsr(unsigned long cfsr);
 
-void show_hfsr(volatile uint32_t hfsr);
+static void show_hfsr(volatile uint32_t hfsr);
 
-void show_dfsr(volatile uint32_t dfsr);
+static void show_dfsr(volatile uint32_t dfsr);
 
-void show_exc_return(unsigned int value);
+static void show_exc_return(unsigned int value);
 
 void HardFault_Handler_C(unsigned long * hardfault_args, unsigned int lr_value)
 {
@@ -76,7 +76,7 @@ void HardFault_Handler_C(unsigned long * hardfault_args, unsigned int lr_value)
     while(1);
 }
 
-void show_exc_return(unsigned int value) {
+static void show_exc_return(unsigned int value) {
     switch (value) {
         case 0xFFFFFFE1:
             printf("ISR/MSP/FPCA=1");
@@ -104,7 +104,7 @@ void show_exc_return(unsigned int value) {
 
 }
 
-void show_dfsr(volatile uint32_t dfsr) {
+static void show_dfsr(volatile uint32_t dfsr) {
     if((dfsr) & (1<<0)) printf("HALTED ");
     if((dfsr) & (1<<1)) printf("BKPT ");
     if((dfsr) & (1<<2)) printf("DWTTRAP ");
@@ -113,14 +113,14 @@ void show_dfsr(volatile uint32_t dfsr) {
     printf("\n");
 }
 
-void show_hfsr(volatile uint32_t hfsr) {
+static void show_hfsr(volatile uint32_t hfsr) {
     if((hfsr) & (1<<1)) printf("VECTBL ");
     if((hfsr) & (1<<30)) printf("FORCED ");
     if((hfsr) & (1<<31)) printf("DEBUGEVT ");
     printf("\n");
 }
 
-void show_cfsr(unsigned long cfsr) {
+static void show_cfsr(unsigned long cfsr) {
     if((cfsr) & (1<<0)) printf("IACCVIOL ");
     if((cfsr) & (1<<1)) printf("DACCVIOL ");
     if((cfsr) & (1<<3)) printf("MUNSTKERR ");
