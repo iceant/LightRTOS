@@ -1,5 +1,5 @@
 #include <DS1307.h>
-
+#include <os_kernel.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -8,13 +8,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 ////
 static DS1307_IO_T * DS1307__device;
-
+static os_mutex_t DS1307_Lock;
 /**
  * @brief Initializes the DS1307 module. Sets clock halt bit to 0 to start timing.
  * @param hi2c User I2C handle pointer.
  */
 void DS1307_Init(DS1307_IO_T * device) {
     DS1307__device = device;
+    os_mutex_init(&DS1307_Lock);
 //    DS1307_SetClockHalt(0);
 }
 
@@ -41,8 +42,10 @@ uint8_t DS1307_GetClockHalt(void) {
  * @param val Value to set, 0 to 255.
  */
 void DS1307_SetRegByte(uint8_t regAddr, uint8_t val) {
+    os_mutex_lock(&DS1307_Lock);
     uint8_t bytes[2] = { regAddr, val };
     DS1307__device->send(DS1307_I2C_ADDR<<1, bytes, 2);
+    os_mutex_unlock(&DS1307_Lock);
 }
 
 /**
@@ -52,11 +55,14 @@ void DS1307_SetRegByte(uint8_t regAddr, uint8_t val) {
  */
 uint8_t DS1307_GetRegByte(uint8_t regAddr) {
     uint8_t val=0;
+    os_mutex_lock(&DS1307_Lock);
     int ret = DS1307__device->send(DS1307_I2C_ADDR<<1, &regAddr, 1);
     if(ret<0){
+        os_mutex_unlock(&DS1307_Lock);
         return val;
     }
     ret = DS1307__device->recv(DS1307_I2C_ADDR<<1, &val, 1);
+    os_mutex_unlock(&DS1307_Lock);
     return val;
 }
 

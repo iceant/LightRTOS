@@ -89,12 +89,12 @@ int main(void){
      * */
     os_thread_init(&thread1, "Thread1", thread1_entry, 1000, thread1_stack, sizeof(thread1_stack), 10, 10);
     os_thread_startup(&thread1);
-//
-//    os_thread_init(&thread2, "Thread2", thread1_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
-//    os_thread_startup(&thread2);
-//
-//    os_thread_init(&thread3, "Thread3", thread1_entry, 200, thread3_stack, sizeof(thread3_stack), 5, 20);
-//    os_thread_startup(&thread3);
+
+    os_thread_init(&thread2, "Thread2", thread1_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
+    os_thread_startup(&thread2);
+
+    os_thread_init(&thread3, "Thread3", thread1_entry, 200, thread3_stack, sizeof(thread3_stack), 5, 20);
+    os_thread_startup(&thread3);
     
     os_kernel_startup();
     

@@ -11,11 +11,16 @@
 #include <os_error.h>
 #endif /*INCLUDED_OS_ERROR_H*/
 
+#ifndef INCLUDED_OS_THREAD_H
+#include <os_thread.h>
+#endif /* INCLUDED_OS_THREAD_H */
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
 typedef struct os_mutex_s{
     volatile os_uint_t counter;
+    os_thread_t * owner;
+    os_priority_t owner_original_priority;
 }os_mutex_t;
 
 ////////////////////////////////////////////////////////////////////////////////

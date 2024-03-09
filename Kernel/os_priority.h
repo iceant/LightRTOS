@@ -17,6 +17,8 @@ typedef os_int_t os_priority_t;
 #define OS_PRIORITY_MAX 32
 #endif
 
+#define OS_PRIORITY_LOWEST (OS_PRIORITY_MAX-1)
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define OS_PRIORITY_CMP_HIGH    (1)
