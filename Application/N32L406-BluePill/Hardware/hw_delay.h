@@ -10,7 +10,10 @@
 ////
 
 #define HW_LOOP_DELAY(CNT) \
-    do{for (; (CNT) > 0; (CNT)--);}while(0)
+    do{                    \
+        uint32_t count = (CNT);\
+        for (; count > 0; count--); \
+    }while(0)
 
     
 #endif /* INCLUDED_HW_DELAY_H */

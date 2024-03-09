@@ -41,6 +41,11 @@ foreach (item IN LISTS BSP_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
+file(GLOB DS1307_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/DS1307/*.c)
+foreach (item IN LISTS DS1307_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
 
 ########################################################################################################################
 
@@ -49,10 +54,12 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${SOURCES}
         PUBLIC ${HARDARE_SOURCES}
         PUBLIC ${BSP_SOURCES}
+        PUBLIC ${DS1307_SOURCES}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Hardware)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/BSP)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/DS1307)
 target_link_libraries(${PROJECT_NAME}
         PUBLIC n32l40x
         PUBLIC LightRTOS-Kernel

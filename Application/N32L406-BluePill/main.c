@@ -25,11 +25,34 @@ static os_thread_t thread3;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
+static void ShowDateTime(void){
+    printf("%04d-%02d-%02d %02d:%02d:%02d\n"
+    , DS1307_GetYear()
+    , DS1307_GetMonth()
+    , DS1307_GetDate()
+    , DS1307_GetHour()
+    , DS1307_GetMinute()
+    , DS1307_GetSecond()
+    );
+}
+
+static void SetDateTime(uint16_t year, uint8_t month, uint8_t  date, uint8_t hour, uint8_t min, uint8_t  sec){
+    DS1307_SetYear(year);
+    DS1307_SetMonth(month);
+    DS1307_SetDate(date);
+    DS1307_SetHour(hour);
+    DS1307_SetMinute(min);
+    DS1307_SetSecond(sec);
+}
+
 static void thread1_entry(void* p){
     os_size_t timeout_ms = (os_size_t)p;
     os_size_t nCount = 0;
+    SetDateTime(2024, 3, 9, 23, 28, 12);
     while(1){
         printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
+        ShowDateTime();
+        
         os_thread_mdelay(timeout_ms);
 //        os_thread_sleep(1); /*调用 sleep 会让出 CPU，其它任务会获得执行机会*/
 //        os_thread_yield();
@@ -64,14 +87,14 @@ int main(void){
      4. 如果优先级一样，但是 tick 不一样时，tick多的获取的运行时间就多
      5. 如果线程使用 yield让出 cpu，当前线程会被加入就绪表，在下次调度时会安排执行，如果优先级是 10,20,5 那么Thread2将永远无法获得运行机会，如果是 10,10,5 那么 将编程 Thread3, Thread1, Thread3, Thread2 这样的循环运行
      * */
-    os_thread_init(&thread1, "Thread1", thread1_entry, 200, thread1_stack, sizeof(thread1_stack), 10, 10);
+    os_thread_init(&thread1, "Thread1", thread1_entry, 1000, thread1_stack, sizeof(thread1_stack), 10, 10);
     os_thread_startup(&thread1);
-
-    os_thread_init(&thread2, "Thread2", thread1_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
-    os_thread_startup(&thread2);
-
-    os_thread_init(&thread3, "Thread3", thread1_entry, 200, thread3_stack, sizeof(thread3_stack), 5, 20);
-    os_thread_startup(&thread3);
+//
+//    os_thread_init(&thread2, "Thread2", thread1_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
+//    os_thread_startup(&thread2);
+//
+//    os_thread_init(&thread3, "Thread3", thread1_entry, 200, thread3_stack, sizeof(thread3_stack), 5, 20);
+//    os_thread_startup(&thread3);
     
     os_kernel_startup();
     
