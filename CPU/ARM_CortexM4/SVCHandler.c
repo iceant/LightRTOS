@@ -17,6 +17,10 @@ void SVC_Handler_C(unsigned  int * svc_args)
             CPU_REG(SCB_ICSR) |= SCB_ICSR_PENDSVSET_Msk;
             svc_exc_return = 0xFFFFFFFDU;
             break;
+        case 1:
+            cpu_reboot();
+            svc_exc_return = 0xFFFFFFFDU;
+            break;
         default:
             printf("ERROR: Unknown SVC service number.\n");
             printf(" - SVC number 0x%x\n", svc_number);

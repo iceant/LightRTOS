@@ -38,8 +38,54 @@ GETCHAR_PROTOTYPE
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
+static void A7670C_ResetPin_On(void){
+    hw_gpio_high(GPIOE, GPIO_PIN_4);
+}
+static void A7670C_ResetPin_Off(void){
+    hw_gpio_low(GPIOE, GPIO_PIN_4);
+}
+static uint8_t A7670C_ResetPin_Read(void){
+    return GPIO_ReadOutputDataBit(GPIOE, GPIO_PIN_4);
+}
+static void A7670C_PwrKeyPin_On(void){
+    hw_gpio_high(GPIOE, GPIO_PIN_5);
+}
+static void A7670C_PwrKeyPin_Off(void){
+    hw_gpio_low(GPIOE, GPIO_PIN_5);
+}
+static uint8_t A7670C_PwrKeyPin_Read(void){
+    return GPIO_ReadOutputDataBit(GPIOE, GPIO_PIN_5);
+}
+static void A7670C_PwrEnPin_On(void){
+    hw_gpio_high(GPIOE, GPIO_PIN_6);
+}
+static void A7670C_PwrEnPin_Off(void){
+    hw_gpio_low(GPIOE, GPIO_PIN_6);
+}
+static uint8_t A7670C_PwrEnPin_Read(void){
+    return GPIO_ReadOutputDataBit(GPIOE, GPIO_PIN_6);
+}
+static void A7670C_StatusPin_On(void){
+    hw_gpio_high(GPIOB, GPIO_PIN_10);
+}
+static void A7670C_StatusPin_Off(void){
+    hw_gpio_low(GPIOB, GPIO_PIN_10);
+}
+static uint8_t A7670C_StatusPin_Read(void){
+    return GPIO_ReadInputDataBit(GPIOB, GPIO_PIN_10);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+
 static io_i2c_t io_I2C1 = {.send=BSP_I2C1_Send, .recv=BSP_I2C1_Recv, .reset = BSP_I2C1_Reset};
 
+static A7670C_Pin_T A7670C_ResetPin = {.on = A7670C_ResetPin_On, .off = A7670C_ResetPin_Off, .read = A7670C_ResetPin_Read };
+static A7670C_Pin_T A7670C_PwrKeyPin = {.on = A7670C_PwrKeyPin_On, .off = A7670C_PwrKeyPin_Off, .read = A7670C_PwrKeyPin_Read };
+static A7670C_Pin_T A7670C_PwrEnPin = {.on = A7670C_PwrEnPin_On, .off = A7670C_PwrEnPin_Off, .read = A7670C_PwrEnPin_Read };
+static A7670C_Pin_T A7670C_StatusPin = {.on = A7670C_StatusPin_On, .off = A7670C_StatusPin_Off, .read = A7670C_StatusPin_Read };
+static A7670C_IO_T A7670C_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_UART5_SetRxHandler, .wait=BSP_UART5_TimeWait, .send=BSP_UART5_Send};
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -54,14 +100,26 @@ void board_init(void)
     NVIC_SetPriority(PendSV_IRQn, 0xFF);
     SysTick_Config(SystemCoreClock/CPU_TICKS_PER_SECOND); /* 1ms = tick */
 
+
+
     /* BSP Configurations */
     BSP_Power3V3_Init();
+    BSP_Power3V3_On();
+
+    hw_gpio_init(GPIOE, GPIO_PIN_4, GPIO_Mode_Out_PP, GPIO_Speed_50MHz); /* 4G Reset */
+    hw_gpio_init(GPIOE, GPIO_PIN_5, GPIO_Mode_Out_PP, GPIO_Speed_50MHz); /* 4G PWR_KEY */
+    hw_gpio_init(GPIOE, GPIO_PIN_6, GPIO_Mode_Out_PP, GPIO_Speed_50MHz); /* 4G PWR_EN */
+    hw_gpio_init(GPIOB, GPIO_PIN_10, GPIO_Mode_IN_FLOATING, GPIO_Speed_50MHz); /* 4G Status */
+    hw_gpio_high(GPIOE, GPIO_PIN_6); /*Turn On 4G Module*/
+
     BSP_USART1_Init();
     BSP_I2C1_Init();
+    BSP_UART5_Init();
 
     /* BSP Device On */
-    BSP_Power3V3_On();
 
     /* Device Configuration */
     DS1307_Init(&io_I2C1);
+    A7670C_Init(&A7670C_PwrEnPin, &A7670C_PwrKeyPin, &A7670C_StatusPin, &A7670C_ResetPin, &A7670C_IO);
+
 }

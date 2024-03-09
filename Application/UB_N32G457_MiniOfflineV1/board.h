@@ -22,6 +22,18 @@
 #include <DS1307.h>
 #endif /*INCLUDED_DS1307_H*/
 
+#ifndef INCLUDED_BSP_USART1_H
+#include <bsp_usart1.h>
+#endif /*INCLUDED_BSP_USART1_H*/
+
+#ifndef INCLUDED_BSP_UART5_H
+#include <bsp_uart5.h>
+#endif /*INCLUDED_BSP_UART5_H*/
+
+#ifndef INCLUDED_A7670C_H
+#include <A7670C.h>
+#endif /*INCLUDED_A7670C_H*/
+
 
 
 ////////////////////////////////////////////////////////////////////////////////

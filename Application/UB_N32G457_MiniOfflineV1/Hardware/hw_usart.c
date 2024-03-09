@@ -10,6 +10,7 @@ void hw_usart_configuration(USART_Module* USARTx, uint32_t BaudRate, uint32_t Re
     /* Enable GPIO clock */
     if(Remap!=0){
         RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_AFIO, ENABLE);
+        GPIO_ConfigPinRemap(Remap, ENABLE);
     }
 
     /* Enable USARTy and USARTz Clock */
@@ -180,7 +181,6 @@ void hw_usart_dma_send(USART_Module * USARTx, uint8_t* TxBuffer, size_t TxBuffer
     uint32_t DMA_CH_TxFlag=0;
     DMA_ChannelType* DMA_CHx=0;
     DMA_Module* DMAx=0;
-    USART_EnableDMA(USARTx, USART_DMAREQ_TX, DISABLE);
 
     if(USARTx==USART1){
         DMAx = DMA1;
@@ -214,7 +214,7 @@ void hw_usart_dma_send(USART_Module * USARTx, uint8_t* TxBuffer, size_t TxBuffer
 
     /* USARTy TX DMA1 Channel (triggered by USARTy Tx event) Config */
     DMA_DeInit(DMA_CHx);
-    DMA_InitStructure.PeriphAddr     = USARTx->DAT;
+    DMA_InitStructure.PeriphAddr     = (((uint32_t)(USARTx))+0x04);
     DMA_InitStructure.MemAddr        = (uint32_t)TxBuffer;
     DMA_InitStructure.Direction      = DMA_DIR_PERIPH_DST;
     DMA_InitStructure.BufSize        = TxBufferSize;
@@ -229,10 +229,10 @@ void hw_usart_dma_send(USART_Module * USARTx, uint8_t* TxBuffer, size_t TxBuffer
 
     USART_EnableDMA(USARTx, USART_DMAREQ_TX, ENABLE);
     DMA_EnableChannel(DMA_CHx, ENABLE);
-
-    /* wait for DMA Tx DONE! */
-    while (DMA_GetFlagStatus(DMA_CH_TxFlag, DMAx) == RESET)
-    {}
+//
+//    /* wait for DMA Tx DONE! */
+//    while (DMA_GetFlagStatus(DMA_CH_TxFlag, DMAx) == RESET)
+//    {}
 }
 
 

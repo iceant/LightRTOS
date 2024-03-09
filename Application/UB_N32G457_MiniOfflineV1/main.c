@@ -28,13 +28,11 @@ static os_thread_t thread3;
 static void thread1_entry(void* p){
     os_size_t timeout_ms = (os_size_t)p;
     os_size_t nCount = 0;
-    DS1307_SetYear(2024);
-    DS1307_SetMonth(3);
-    DS1307_SetDate(8);
-    DS1307_SetHour(19);
-    DS1307_SetMinute(21);
-    DS1307_SetSecond(10);
+
+    A7670C_Startup();
+
     while(1){
+
         printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
         printf("%04d-%02d-%02d %02d:%02d:%02d\n"
                , DS1307_GetYear()
@@ -52,6 +50,21 @@ static void thread1_entry(void* p){
 
 
 #endif
+////////////////////////////////////////////////////////////////////////////////
+////
+static int USART1_RxHandler(sdk_ringbuffer_t * buffer, void* userdata){
+    if(sdk_ringbuffer_find_str(buffer, 0, "\r\n")!=-1){
+        printf("USART1:(%ld) %s\n", sdk_ringbuffer_used(buffer),  buffer->buffer);
+        if(sdk_ringbuffer_find_str(buffer,0, "reboot")!=-1){
+            __svc(1); /* Reboot */
+            __disable_irq();
+            __NVIC_SystemReset();
+        }
+        return BSP_USART1_RX_STATE_DONE;
+    }
+    return BSP_USART1_RX_STATE_CONTINUE;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -59,9 +72,11 @@ static void thread1_entry(void* p){
 int main(void){
 
     board_init();
-    
+
+    BSP_USART1_SetRxHandler(USART1_RxHandler, 0);
+
     os_kernel_init();
-    
+
     /*
      1. 如果 20,5,10 的优先级设置，永远按照 5, 10, 20 的优先级顺序进行调度
      2. 如果 20,10,10 的优先级设置, Thread2 和 Thread3 会交替占用第一优先级，然后才是 Thread1 运行, Thread1 永远在最后
@@ -72,11 +87,11 @@ int main(void){
     os_thread_init(&thread1, "Thread1", thread1_entry, 1000, thread1_stack, sizeof(thread1_stack), 10, 10);
     os_thread_startup(&thread1);
 
-    os_thread_init(&thread2, "Thread2", thread1_entry, 1500, thread2_stack, sizeof(thread2_stack), 10, 10);
-    os_thread_startup(&thread2);
-
-    os_thread_init(&thread3, "Thread3", thread1_entry, 2000, thread3_stack, sizeof(thread3_stack), 5, 20);
-    os_thread_startup(&thread3);
+//    os_thread_init(&thread2, "Thread2", thread1_entry, 1500, thread2_stack, sizeof(thread2_stack), 10, 10);
+//    os_thread_startup(&thread2);
+//
+//    os_thread_init(&thread3, "Thread3", thread1_entry, 2000, thread3_stack, sizeof(thread3_stack), 5, 20);
+//    os_thread_startup(&thread3);
 
     os_kernel_startup();
     

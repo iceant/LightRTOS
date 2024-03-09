@@ -3,7 +3,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-
 #ifndef INCLUDED_CPU_TYPES_H
 #include <cpu_types.h>
 #endif /* INCLUDED_CPU_TYPES_H */
@@ -40,6 +39,16 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
+
+__STATIC_FORCEINLINE void cpu_dsb(void)
+{
+    __ASM volatile ("dsb 0xF":::"memory");
+}
+
+__STATIC_FORCEINLINE void cpu_isb(void)
+{
+    __ASM volatile ("isb 0xF":::"memory");
+}
 
 __STATIC_FORCEINLINE void cpu_dmb(void)
 {
@@ -135,6 +144,53 @@ __STATIC_FORCEINLINE cpu_uint_t cpu_rbit(cpu_uint_t value)
 //__STATIC_FORCEINLINE cpu_uint_t cpu_ctz(cpu_uint_t value){
 //    return cpu_clz(cpu_rbit(value));
 //}
+
+#ifndef SCS_BASE
+#define SCS_BASE            (0xE000E000UL)                            /*!< System Control Space Base Address */
+#endif
+
+#ifndef SCB_BASE
+#define SCB_BASE            (SCS_BASE +  0x0D00UL)                    /*!< System Control Block Base Address */
+#endif
+
+#ifndef SCB_AIRCR
+#define SCB_AIRCR           (SCB_BASE +  0x000CUL)                    /*!< System Control Block Base Address */
+#endif
+
+#ifndef SCB_AIRCR_VECTKEY_Pos
+#define SCB_AIRCR_VECTKEY_Pos              16U                                            /*!< SCB AIRCR: VECTKEY Position */
+#endif
+
+#ifndef SCB_AIRCR_PRIGROUP_Pos
+#define SCB_AIRCR_PRIGROUP_Pos              8U                                            /*!< SCB AIRCR: PRIGROUP Position */
+#endif
+
+#ifndef SCB_AIRCR_PRIGROUP_Msk
+#define SCB_AIRCR_PRIGROUP_Msk             (7UL << SCB_AIRCR_PRIGROUP_Pos)                /*!< SCB AIRCR: PRIGROUP Mask */
+#endif
+
+#ifndef SCB_AIRCR_SYSRESETREQ_Pos
+#define SCB_AIRCR_SYSRESETREQ_Pos           2U                                            /*!< SCB AIRCR: SYSRESETREQ Position */
+#endif
+
+#ifndef SCB_AIRCR_SYSRESETREQ_Msk
+#define SCB_AIRCR_SYSRESETREQ_Msk          (1UL << SCB_AIRCR_SYSRESETREQ_Pos)             /*!< SCB AIRCR: SYSRESETREQ Mask */
+#endif
+
+__STATIC_FORCEINLINE void cpu_reboot(void)
+{
+    cpu_dsb();                                                          /* Ensure all outstanding memory accesses included
+                                                                       buffered write are completed before reset */
+    CPU_REG(SCB_AIRCR)  = (uint32_t)((0x5FAUL << SCB_AIRCR_VECTKEY_Pos)    |
+                             (CPU_REG(SCB_AIRCR) & SCB_AIRCR_PRIGROUP_Msk) |
+                             SCB_AIRCR_SYSRESETREQ_Msk    );         /* Keep priority group unchanged */
+    cpu_dsb();                                                          /* Ensure completion of memory access */
+
+    for(;;)                                                           /* wait until reset */
+    {
+        __asm__ volatile("nop");
+    }
+}
 
 #endif /* INCLUDED_CPU_MACROS_H */
 
