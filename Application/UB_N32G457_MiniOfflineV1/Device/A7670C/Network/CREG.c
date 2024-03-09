@@ -16,7 +16,7 @@ static A7670C_RxHandler_Result Test_Handler(sdk_ringbuffer_t * buffer, void* ud)
 
 A7670C_Result A7670C_CREG_Test(bool* result, uint32_t timeout_ms)
 {
-    A7670C_Result err = A7670C_RequestWithCmd(Test_Handler, &result, os_tick_from_ms(timeout_ms), "AT+CREG=?\r\n");
+    A7670C_Result err = A7670C_RequestWithCmd(Test_Handler, &result, os_tick_from_millisecond(timeout_ms), "AT+CREG=?\r\n");
     if(err==kA7670C_Result_TIMEOUT){
         *result = false;
     }
@@ -64,6 +64,7 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void* ud)
                     break;
             }
 
+            sdk_ringbuffer_reset(buffer);
             return kA7670C_RxHandler_Result_DONE;
         }else{
             return kA7670C_RxHandler_Result_RESET;
@@ -137,7 +138,7 @@ A7670C_Result A7670C_CREG_Write(A7670C_CREG_Write_Response* result, int n, uint3
 {
     A7670C_Result err;
     result->err_code = -1;
-    err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms), "AT+CREG=%d\r\n", n);
+    err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CREG=%d\r\n", n);
     return err;
 }
 
@@ -156,7 +157,7 @@ static A7670C_RxHandler_Result Exec_Handler(sdk_ringbuffer_t * buffer, void* ud)
 A7670C_Result A7670C_CREG_Exec(bool* result, int n, uint32_t timeout_ms)
 {
     A7670C_Result err;
-    err = A7670C_RequestWithArgs(Exec_Handler, result, os_tick_from_ms(timeout_ms), "AT+CREG\r\n", n);
+    err = A7670C_RequestWithArgs(Exec_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CREG\r\n", n);
     return err;
 }
 

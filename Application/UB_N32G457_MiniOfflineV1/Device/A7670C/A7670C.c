@@ -96,22 +96,22 @@ __A7670C__Boot:
         os_thread_mdelay(1000);
     }
     
-//    nRetry = 0;
-//    while(1){
-//        printf("A7670C CS service...");
-//        A7670C_CREG_Read_Response CREG_Read_Response;
-//        result = A7670C_CREG_Read(&CREG_Read_Response, 12000);
-//        if(CREG_Read_Response.code == kA7670C_Response_Code_OK){
-//            printf("n:%d, stat: %d\n",CREG_Read_Response.n ,CREG_Read_Response.stat);
-//            if(CREG_Read_Response.stat==1){
-//                break;
-//            }
-//        }
-//        if(nRetry++==10){
-//            return kA7670C_Result_TIMEOUT;
-//        }
-//        os_thread_mdelay(1000);
-//    }
+    nRetry = 0;
+    while(1){
+        printf("A7670C CS service...");
+        A7670C_CREG_Read_Response CREG_Read_Response;
+        result = A7670C_CREG_Read(&CREG_Read_Response, 12000);
+        if(CREG_Read_Response.code == kA7670C_Response_Code_OK){
+            printf("n:%d, stat: %d\n",CREG_Read_Response.n ,CREG_Read_Response.stat);
+            if(CREG_Read_Response.stat==1){
+                break;
+            }
+        }
+        if(nRetry++==10){
+            return kA7670C_Result_TIMEOUT;
+        }
+        os_thread_mdelay(1000);
+    }
     
     int  A7670C_PS_Flag = 0;
     nRetry = 0;

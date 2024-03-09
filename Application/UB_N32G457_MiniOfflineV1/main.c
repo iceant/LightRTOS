@@ -25,13 +25,70 @@ static os_thread_t thread3;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
+static void ntp_sync(void){
+    A7670C_CNTP_Exec_Response CNTP_Exec_Response;
+    A7670C_CCLK_Read_Response CCLK_Read_Response;
+    A7670C_CCLK_DateTime CCLK_DateTime;
+
+    while(1){
+
+        do{
+            A7670C_CNTP_Exec(&CNTP_Exec_Response, 12000);
+        }while(CNTP_Exec_Response.code!=kA7670C_Response_Code_OK);
+
+        do {
+            A7670C_CCLK_Read(&CCLK_Read_Response, 12000);
+        }while(CCLK_Read_Response.code!=kA7670C_Response_Code_OK);
+
+        A7670C_CCLK_ToDateTime(&CCLK_DateTime, &CCLK_Read_Response);
+
+        if(CCLK_DateTime.year==2070
+           && CCLK_DateTime.month==1
+           && CCLK_DateTime.day==1
+                ){
+            A7670C_NopDelay(0x7FFFFF);
+            continue;
+        }
+
+        DS1307_SetYear(CCLK_DateTime.year);
+        DS1307_SetMonth(CCLK_DateTime.month);
+        DS1307_SetDate(CCLK_DateTime.day);
+        DS1307_SetHour(CCLK_DateTime.hour);
+        DS1307_SetMinute(CCLK_DateTime.min);
+        DS1307_SetSecond(CCLK_DateTime.sec+2);
+
+        printf("Set DateTime: %04d-%02d-%02d %02d:%02d:%02d\n"
+                , CCLK_DateTime.year
+                , CCLK_DateTime.month
+                , CCLK_DateTime.day
+                , CCLK_DateTime.hour
+                , CCLK_DateTime.min
+                , CCLK_DateTime.sec+2
+        );
+        break;
+    }
+}
+
 static void thread1_entry(void* p){
     os_size_t timeout_ms = (os_size_t)p;
     os_size_t nCount = 0;
 
+
     A7670C_Startup();
 
+
+    A7670C_CNTP_Write_Response CNTP_Write_Response;
+    do {
+        A7670C_CNTP_Write(&CNTP_Write_Response, "ntp.aliyun.com", 32, 12000);
+    }while(CNTP_Write_Response.code!=kA7670C_Response_Code_OK);
+
+    ntp_sync();
+
     while(1){
+        if(nCount++ >= 30){
+            nCount = 0;
+            ntp_sync();
+        }
 
         printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
         printf("%04d-%02d-%02d %02d:%02d:%02d\n"
@@ -42,6 +99,7 @@ static void thread1_entry(void* p){
                , DS1307_GetMinute()
                , DS1307_GetSecond()
                );
+
         os_thread_mdelay(timeout_ms);
 //        os_thread_sleep(1); /*调用 sleep 会让出 CPU，其它任务会获得执行机会*/
 //        os_thread_yield();

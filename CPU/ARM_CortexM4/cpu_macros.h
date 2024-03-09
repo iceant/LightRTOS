@@ -145,6 +145,10 @@ __STATIC_FORCEINLINE cpu_uint_t cpu_rbit(cpu_uint_t value)
 //    return cpu_clz(cpu_rbit(value));
 //}
 
+////////////////////////////////////////////////////////////////////////////////
+//// for REBOOT
+
+
 #ifndef SCS_BASE
 #define SCS_BASE            (0xE000E000UL)                            /*!< System Control Space Base Address */
 #endif
