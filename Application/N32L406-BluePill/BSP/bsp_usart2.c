@@ -70,12 +70,11 @@ void USART2_IRQHandler(void){
     uint8_t ch;
     if (USART_GetIntStatus(HW_USARTx, USART_INT_RXDNE) != RESET)
     {
+        ch = USART_ReceiveData(HW_USARTx);
         if(USART2_RxThreadFlag==OS_TRUE){
-            ch = USART_ReceiveData(HW_USARTx);
             sdk_ringbuffer_put(&USART2_RxBuffer, ch);
             os_sem_release(&USART2_RxSem);
         }
-        USART_ClrIntPendingBit(HW_USARTx, USART_INT_RXDNE);
     }
 }
 
@@ -110,7 +109,7 @@ void BSP_USART2_SetRxHandler(BSP_USART2_RxHandler rxHandler, void* userdata){
 }
 
 int BSP_USART2_Send(uint8_t* data, int size){
-    printf("USART2_Send: %s\n", data);
+//    printf("USART2_Send: %s\n", data);
     os_mutex_lock(&BSP_USART2__Mutex);
     sdk_ringbuffer_reset(&USART2_RxBuffer);
 //    hw_usart_send(HW_USARTx, data, size);
@@ -121,17 +120,16 @@ int BSP_USART2_Send(uint8_t* data, int size){
 
 int BSP_USART2_TimeWait(uint32_t timeout_ms){
     os_mutex_lock(&BSP_USART2__Mutex);
-    printf("USART2_TimeWait Sem.Count:%d\n", USART2_NotifySem.value);
-    assert(USART2_NotifySem.value==0);
+//    printf("USART2_TimeWait Sem.Count:%d\n", USART2_NotifySem.value);
+//    assert(USART2_NotifySem.value==0);
     int err =  os_sem_take(&USART2_NotifySem, os_tick_from_millisecond(timeout_ms));
-    sdk_ringbuffer_reset(&USART2_RxBuffer);
     os_mutex_unlock(&BSP_USART2__Mutex);
-    printf("USART2_TimeWait Result:%d, Sem.Count:%d\n", err, USART2_NotifySem.value);
+//    printf("USART2_TimeWait Result:%d, Sem.Count:%d\n", err, USART2_NotifySem.value);
     return err;
 }
 
 void BSP_USART2_Notify(void)
 {
-    printf("USART2_Notify... %d\n", USART2_NotifySem.value);
+//    printf("USART2_Notify... %d\n", USART2_NotifySem.value);
     os_sem_release(&USART2_NotifySem);
 }
