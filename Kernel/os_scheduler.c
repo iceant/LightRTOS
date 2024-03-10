@@ -12,8 +12,8 @@
 ////
 static cpu_spinlock_t os_scheduler__tick_lock={.atomic.counter =0};
 static cpu_spinlock_t os_scheduler__lock={.atomic.counter = 0};
-static volatile os_tick_t os_scheduler__tick_count;
-static volatile os_thread_t* os_scheduler__current_thread;
+static volatile os_tick_t os_scheduler__tick_count=0;
+static volatile os_thread_t* os_scheduler__current_thread=0;
 static os_list_t os_scheduler__ready_table[OS_PRIORITY_MAX]={0};
 static volatile os_bool_t os_scheduler__init_flag = OS_FALSE;
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,3 +250,6 @@ volatile os_tick_t os_scheduler_get_current_tick(void){
     return os_scheduler__tick_count;
 }
 
+os_bool_t os_scheduler_is_ready(void){
+    return (os_scheduler__init_flag==OS_TRUE && os_scheduler__current_thread!=0)?OS_TRUE:OS_FALSE;
+}

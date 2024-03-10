@@ -53,5 +53,6 @@ os_err_t os_kernel_init(void);
 
 os_err_t  os_kernel_startup(void);
 
+os_bool_t os_kernel_is_startup(void);
 
 #endif /*INCLUDED_OS_KERNEL_H*/

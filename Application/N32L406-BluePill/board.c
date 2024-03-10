@@ -34,8 +34,11 @@ GETCHAR_PROTOTYPE
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-static DS1307_IO_T DS1307_DeviceIO={.send=BSP_I2C1_Send, .recv=BSP_I2C1_Recv};
+//static DS1307_IO_T DS1307_DeviceIO={.send=BSP_I2C1_Send, .recv=BSP_I2C1_Recv};
+static ESP01S_IO_T ESP01S_DeviceIO={.send=BSP_USART2_Send, .set_rx_handler=(void*)BSP_USART2_SetRxHandler
+                                    , .wait=BSP_USART2_TimeWait, .notify=BSP_USART2_Notify};
 
+ESP01S_Device_T ESP01S_Device={.device_io=&ESP01S_DeviceIO};
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -52,10 +55,14 @@ void board_init(void)
     
     /* Hardware Configurations */
     BSP_USART1_Init();
-    BSP_I2C1_Init();
+//    BSP_I2C1_Init();
+    BSP_USART2_Init();
     
     /* Device Configuration */
-    DS1307_Init(&DS1307_DeviceIO);
+//    DS1307_Init(&DS1307_DeviceIO);
+    DS1302_Init();
+    ESP01S_Init(&ESP01S_Device, &ESP01S_DeviceIO);
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////

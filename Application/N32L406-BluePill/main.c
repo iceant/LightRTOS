@@ -27,30 +27,52 @@ static os_thread_t thread3;
 
 static void ShowDateTime(void){
     printf("%04d-%02d-%02d %02d:%02d:%02d\n"
-    , DS1307_GetYear()
-    , DS1307_GetMonth()
-    , DS1307_GetDate()
-    , DS1307_GetHour()
-    , DS1307_GetMinute()
-    , DS1307_GetSecond()
+    , DS1302_GetYear()
+    , DS1302_GetMonth()
+    , DS1302_GetDate()
+    , DS1302_GetHour()
+    , DS1302_GetMinute()
+    , DS1302_GetSecond()
     );
 }
 
-static void SetDateTime(uint16_t year, uint8_t month, uint8_t  date, uint8_t hour, uint8_t min, uint8_t  sec){
-    DS1307_SetYear(year);
-    DS1307_SetMonth(month);
-    DS1307_SetDate(date);
-    DS1307_SetHour(hour);
-    DS1307_SetMinute(min);
-    DS1307_SetSecond(sec);
+static void SetDateTime(uint16_t year, uint8_t month, uint8_t  date, uint8_t hour, uint8_t min, uint8_t  sec, uint8_t dayOfWeek){
+    DS1302_Set(year, month, date, hour, min, sec, dayOfWeek);
+}
+
+static void NTP_Sync(void){
+    struct tm datetime={0};
+    ESP01S_CIPSNTPTIME(&ESP01S_Device, &datetime, 12000);
+    if(datetime.tm_mday!=0){
+        SetDateTime(datetime.tm_year
+                , datetime.tm_mon+1
+                , datetime.tm_mday
+                , datetime.tm_hour
+                , datetime.tm_min
+                , datetime.tm_sec
+                , datetime.tm_wday);
+    }
+    
 }
 
 static void thread1_entry(void* p){
     os_size_t timeout_ms = (os_size_t)p;
     os_size_t nCount = 0;
-    SetDateTime(2024, 3, 9, 23, 28, 12);
+    
+    ESP01S_Connect(&ESP01S_Device, "PIZER_WLS", "1234567890", 12000);
+    ESP01S_CWMODE_Set(&ESP01S_Device, 1, 12000);
+    ESP01S_CIPSNTPCFG(&ESP01S_Device, 8, 12000);
+    
+    NTP_Sync();
+    
     while(1){
+        
         printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
+        
+        if(nCount%30==0){
+            NTP_Sync();
+        }
+        
         ShowDateTime();
         
         os_thread_mdelay(timeout_ms);
@@ -92,9 +114,9 @@ int main(void){
 
     os_thread_init(&thread2, "Thread2", thread1_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
     os_thread_startup(&thread2);
-
-    os_thread_init(&thread3, "Thread3", thread1_entry, 200, thread3_stack, sizeof(thread3_stack), 5, 20);
-    os_thread_startup(&thread3);
+//
+//    os_thread_init(&thread3, "Thread3", thread1_entry, 200, thread3_stack, sizeof(thread3_stack), 5, 20);
+//    os_thread_startup(&thread3);
     
     os_kernel_startup();
     

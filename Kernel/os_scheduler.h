@@ -37,4 +37,6 @@ os_err_t os_scheduler_timed_wait(os_thread_t* thread, os_tick_t tick);
 
 volatile os_tick_t os_scheduler_get_current_tick(void);
 
+os_bool_t os_scheduler_is_ready(void);
+
 #endif /*INCLUDED_OS_SCHEDULER_H*/

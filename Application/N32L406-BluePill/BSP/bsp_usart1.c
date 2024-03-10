@@ -1,6 +1,7 @@
 #include <bsp_usart1.h>
 #include <os_kernel.h>
 #include <sdk_ringbuffer.h>
+#include <stdio.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -30,11 +31,13 @@ static os_thread_t USART1_RxThread;
 
 static BSP_USART1_RxHandler BSP_USART1__RxHandler=0;
 static void* BSP_USART1__RxHandler_Parameter=0;
-
+static os_bool_t BSP_USART1__RxThread_Flag = OS_FALSE;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
 static void USART1_RxThreadEntry(void* parameter){
+    printf("USART1_RxThreadEntry Startup...\n");
+    BSP_USART1__RxThread_Flag = OS_TRUE;
     while(1){
         os_sem_take(&USART1_RxSem, OS_WAIT_INFINITY);
         if(BSP_USART1__RxHandler){
@@ -49,8 +52,11 @@ static void USART1_RxThreadEntry(void* parameter){
 void USART1_IRQHandler(void){
     if (USART_GetIntStatus(HW_USARTx, USART_INT_RXDNE) != RESET)
     {
-        sdk_ringbuffer_put(&USART1_RxBuffer, USART_ReceiveData(HW_USARTx));
-        os_sem_release(&USART1_RxSem);
+        uint8_t ch =  USART_ReceiveData(HW_USARTx);
+        if(BSP_USART1__RxThread_Flag){
+            sdk_ringbuffer_put(&USART1_RxBuffer,ch);
+            os_sem_release(&USART1_RxSem);
+        }
     }
 }
 

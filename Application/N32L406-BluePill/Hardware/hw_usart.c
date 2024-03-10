@@ -56,113 +56,85 @@ os_err_t hw_usart_init(hw_usart_t* usart, void* USARTx
     }else if(USARTx==USART2){
         RCC_EnableAPB1PeriphClk(RCC_APB1_PERIPH_USART2, ENABLE);
         if(Tx_GPIO==GPIOA && Tx_Pin==GPIO_PIN_2){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOA, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF4_USART2);
         }else if(Tx_GPIO==GPIOB && Tx_Pin==GPIO_PIN_4){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF4_USART2);
         }
         
         if(Rx_GPIO==GPIOA && Rx_Pin==GPIO_PIN_3){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOA, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF4_USART2);
         }else if(Rx_GPIO==GPIOB && Rx_Pin==GPIO_PIN_5){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF6_USART2);
         }else if(Rx_GPIO==GPIOD && Rx_Pin==GPIO_PIN_15){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOD, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF4_USART2);
         }
     }else if(USARTx==USART3){
         RCC_EnableAPB1PeriphClk(RCC_APB1_PERIPH_USART3, ENABLE);
+        
         if(Tx_GPIO==GPIOB && Tx_Pin==GPIO_PIN_10){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF0_USART3);
         }else if(Tx_GPIO==GPIOC && Tx_Pin==GPIO_PIN_10){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOC, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF5_USART3);
         }
         
         if(Rx_GPIO==GPIOB && Rx_Pin==GPIO_PIN_11){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF5_USART3);
         }else if(Rx_GPIO==GPIOC && Rx_Pin==GPIO_PIN_11){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOC, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF5_USART3);
         }
     }else if(USARTx==UART4){
         RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_UART4, ENABLE);
         if(Tx_GPIO==GPIOB && Tx_Pin==GPIO_PIN_0){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_UART4);
         }else if(Tx_GPIO==GPIOB && Tx_Pin==GPIO_PIN_14){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_UART4);
         }else if(Tx_GPIO==GPIOC && Tx_Pin==GPIO_PIN_10){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOC, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_UART4);
         }else if(Tx_GPIO==GPIOD && Tx_Pin==GPIO_PIN_13){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOD, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_UART4);
         }
         
         if(Rx_GPIO==GPIOB && Rx_Pin==GPIO_PIN_1){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF6_UART4);
         }else if(Rx_GPIO==GPIOB && Rx_Pin==GPIO_PIN_15){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF6_UART4);
         }else if(Rx_GPIO==GPIOC && Rx_Pin==GPIO_PIN_11){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOC, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF6_UART4);
         }else if(Rx_GPIO==GPIOD && Rx_Pin==GPIO_PIN_12){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOD, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF6_UART4);
         }
     }else if(USARTx==UART5){
         RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_UART5, ENABLE);
         
         if(Tx_GPIO==GPIOB && Tx_Pin==GPIO_PIN_4){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_UART5);
         }else if(Tx_GPIO==GPIOB && Tx_Pin==GPIO_PIN_8){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_UART5);
         }else if(Tx_GPIO==GPIOC && Tx_Pin==GPIO_PIN_12){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOC, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_UART5);
         }
         
         if(Rx_GPIO==GPIOB && Rx_Pin==GPIO_PIN_5){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF7_UART5);
         }else if(Rx_GPIO==GPIOB && Rx_Pin==GPIO_PIN_9){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF6_UART5);
         }else if(Rx_GPIO==GPIOD && Rx_Pin==GPIO_PIN_2){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOD, ENABLE);
             HW_USART_GPIO_RX(Rx_GPIO, Rx_Pin, GPIO_AF6_UART5);
         }
     }else if(USARTx==LPUART){
         RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOA, ENABLE);
         
         if(Tx_GPIO==GPIOA && Tx_Pin==GPIO_PIN_1){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOA, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_LPUART);
         }else if(Tx_GPIO==GPIOA && Tx_Pin==GPIO_PIN_4){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOA, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_LPUART);
         }else if(Tx_GPIO==GPIOB && Tx_Pin==GPIO_PIN_6){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF6_LPUART);
         }else if(Tx_GPIO==GPIOB && Tx_Pin==GPIO_PIN_10){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOB, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF4_LPUART);
         }else if(Tx_GPIO==GPIOC && Tx_Pin==GPIO_PIN_4){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOC, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF2_LPUART);
         }else if(Tx_GPIO==GPIOC && Tx_Pin==GPIO_PIN_10){
-            RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_GPIOC, ENABLE);
             HW_USART_GPIO_TX(Tx_GPIO, Tx_Pin, GPIO_AF0_LPUART);
         }
         

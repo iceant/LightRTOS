@@ -25,14 +25,27 @@
 #include <bsp_usart1.h>
 #endif /*INCLUDED_BSP_USART1_H*/
 
+#ifndef INCLUDED_BSP_USART2_H
+#include <bsp_usart2.h>
+#endif /*INCLUDED_BSP_USART2_H*/
+
+
 #ifndef INCLUDED_BSP_I2C1_H
 #include <bsp_i2c1.h>
 #endif /*INCLUDED_BSP_I2C1_H*/
 
-#ifndef INCLUDED_DS1307_H
-#include <DS1307.h>
-#endif /*INCLUDED_DS1307_H*/
+#ifndef INCLUDED_DS1302_H
+#include <DS1302.h>
+#endif /*INCLUDED_DS1302_H*/
 
+#ifndef INCLUDED_ESP01S_H
+#include <ESP01S.h>
+#endif /*INCLUDED_ESP01S_H*/
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+extern ESP01S_Device_T ESP01S_Device;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
