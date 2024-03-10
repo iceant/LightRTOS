@@ -241,6 +241,7 @@ static void os_scheduler__timeout(os_time_t time, void* userdata){
 os_err_t os_scheduler_timed_wait(os_thread_t* thread, os_tick_t tick){
     
     thread->state = OS_THREAD_STATE_TIMEWAIT;
+    thread->remain_ticks = 0;
     os_timer_add(&thread->timer_node, os_scheduler__timeout, thread, tick, OS_TIMER_TYPE_ONCE);
     
     return os_scheduler_schedule();

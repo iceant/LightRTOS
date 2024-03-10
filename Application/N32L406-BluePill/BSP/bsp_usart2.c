@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <sdk_hex.h>
 #include <assert.h>
+#include <os_mutex.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define HW_USARTx USART2
@@ -26,7 +27,7 @@ typedef struct BPS_USART2_RxHandlerRecord{
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-
+static os_mutex_t BSP_USART2__Mutex;
 static hw_usart_t HW_USART_OBJ;
 
 static uint8_t USART2_RxBlock[USART2_RX_BLOCK_SIZE];
@@ -85,12 +86,12 @@ void BSP_USART2_Init(void)
 {
     sdk_ringbuffer_init(&USART2_RxBuffer, USART2_RxBlock, sizeof(USART2_RxBlock));
     os_sem_init(&USART2_RxSem, "USART2_RxSem", 0, OS_QUEUE_FIFO);
-    
+    os_sem_init(&USART2_NotifySem, "USART2_NfySem", 0, OS_QUEUE_FIFO);
+    os_mutex_init(&BSP_USART2__Mutex);
     hw_usart_enable_dma();
     hw_usart_init(&HW_USART_OBJ, HW_USARTx, HW_USARTx_TxGPIO, HW_USARTx_TxPIN, HW_USARTx_RxGPIO, HW_USARTx_RxPIN, HW_USARTx_BAUDRATE);
     hw_usart_enable_irq(HW_USARTx, USART2_IRQn, 0, HW_USART_IRQ_MODE_RX);
-    
-    os_sem_init(&USART2_NotifySem, "USART2_NfySem", 0, OS_QUEUE_FIFO);
+
     os_thread_init(&USART2_RxThread, "USART2_RxThd", USART2_RxThreadEntry, 0
             , USART2_RxThread_Stack, sizeof(USART2_RxThread_Stack)
             , USART2_RX_THREAD_PRIORITY
@@ -100,27 +101,37 @@ void BSP_USART2_Init(void)
 }
 
 void BSP_USART2_SetRxHandler(BSP_USART2_RxHandler rxHandler, void* userdata){
+//    printf("USART2_SetRxHandler BEFORE: %p, %p\n", BSP_USART2__RxHandler.handler, BSP_USART2__RxHandler.userdata);
+    os_mutex_lock(&BSP_USART2__Mutex);
     BSP_USART2__RxHandler.handler = rxHandler;
     BSP_USART2__RxHandler.userdata = userdata;
-    printf("USART2_SetRxHandler: %p, %p\n", rxHandler, userdata);
+    os_mutex_unlock(&BSP_USART2__Mutex);
+//    printf("USART2_SetRxHandler END: %p, %p\n", rxHandler, userdata);
 }
 
 int BSP_USART2_Send(uint8_t* data, int size){
     printf("USART2_Send: %s\n", data);
+    os_mutex_lock(&BSP_USART2__Mutex);
     sdk_ringbuffer_reset(&USART2_RxBuffer);
 //    hw_usart_send(HW_USARTx, data, size);
     hw_usart_dma_send(HW_USARTx, data, size);
+    os_mutex_unlock(&BSP_USART2__Mutex);
     return size;
 }
 
 int BSP_USART2_TimeWait(uint32_t timeout_ms){
+    os_mutex_lock(&BSP_USART2__Mutex);
+    printf("USART2_TimeWait Sem.Count:%d\n", USART2_NotifySem.value);
+    assert(USART2_NotifySem.value==0);
     int err =  os_sem_take(&USART2_NotifySem, os_tick_from_millisecond(timeout_ms));
     sdk_ringbuffer_reset(&USART2_RxBuffer);
-    printf("USART2_TimeWait Result:%d\n", err);
+    os_mutex_unlock(&BSP_USART2__Mutex);
+    printf("USART2_TimeWait Result:%d, Sem.Count:%d\n", err, USART2_NotifySem.value);
     return err;
 }
 
 void BSP_USART2_Notify(void)
 {
+    printf("USART2_Notify... %d\n", USART2_NotifySem.value);
     os_sem_release(&USART2_NotifySem);
 }

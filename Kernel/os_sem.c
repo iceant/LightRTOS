@@ -83,18 +83,17 @@ os_err_t os_sem_init(os_sem_t* sem, const char* name, int value, int flag)
 os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks)
 {
     volatile os_thread_t * current_thread;
-    
-    cpu_spinlock_lock(&sem->lock);
-    {
+    while(1){
+        cpu_spinlock_lock(&sem->lock);
         if(sem->value>0){
             sem->value--;
             /* 在 Take 前有 Release 发生，可以在初始化 sem 时，设置初始 Value，这样可以达到控制的目的 */
             cpu_spinlock_unlock(&sem->lock);
             return OS_EOK;
         }
-
+        
         assert(sem->value==0);
-
+        
         current_thread = os_scheduler_current_thread();
         current_thread->error = OS_THREAD_EOK;
         
@@ -109,7 +108,7 @@ os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks)
             
             current_thread->state = OS_THREAD_STATE_WAIT;
             cpu_spinlock_unlock(&sem->lock);
-            return os_scheduler_schedule();
+            os_scheduler_schedule();
         }else{
             os_sem__insert(sem, current_thread); /* 挂在 sem 上 */
             cpu_spinlock_unlock(&sem->lock);
@@ -121,7 +120,8 @@ os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks)
             if(current_thread->error == OS_THREAD_ETIMEOUT){
                 return OS_ETIMEOUT;
             }
-            return OS_EOK;
+            
+//            return OS_EOK;
         }
     }
 }

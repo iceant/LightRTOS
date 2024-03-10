@@ -42,17 +42,26 @@ static void SetDateTime(uint16_t year, uint8_t month, uint8_t  date, uint8_t hou
 
 static void NTP_Sync(void){
     struct tm datetime={0};
-    ESP01S_CIPSNTPTIME(&ESP01S_Device, &datetime, 12000);
-    if(datetime.tm_mday!=0){
-        SetDateTime(datetime.tm_year
-                , datetime.tm_mon+1
-                , datetime.tm_mday
-                , datetime.tm_hour
-                , datetime.tm_min
-                , datetime.tm_sec
-                , datetime.tm_wday);
-    }
+    do{
+        ESP01S_CIPSNTPTIME(&ESP01S_Device, &datetime, 3000);
+    } while (datetime.tm_mday==0);
     
+    SetDateTime(datetime.tm_year
+            , datetime.tm_mon+1
+            , datetime.tm_mday
+            , datetime.tm_hour
+            , datetime.tm_min
+            , datetime.tm_sec
+            , datetime.tm_wday);
+}
+
+static void thread_worker_entry(void* p){
+    uint32_t nCount = 0;
+    while(1){
+        printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
+        ShowDateTime();
+        os_thread_mdelay(1000);
+    }
 }
 
 static void thread1_entry(void* p){
@@ -64,7 +73,14 @@ static void thread1_entry(void* p){
     ESP01S_CIPSNTPCFG(&ESP01S_Device, 8, 12000);
     
     NTP_Sync();
-    
+
+
+    os_thread_init(&thread2, "Thread2", thread_worker_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
+    os_thread_startup(&thread2);
+
+    os_thread_init(&thread3, "Thread3", thread_worker_entry, 200, thread3_stack, sizeof(thread3_stack), 10, 10);
+    os_thread_startup(&thread3);
+
     while(1){
         
         printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
@@ -101,7 +117,7 @@ int main(void){
     BSP_USART1_SetRxHandler(USART1__RxHandler, 0);
     
     os_kernel_init();
-    
+
     /*
      1. 如果 20,5,10 的优先级设置，永远按照 5, 10, 20 的优先级顺序进行调度
      2. 如果 20,10,10 的优先级设置, Thread2 和 Thread3 会交替占用第一优先级，然后才是 Thread1 运行, Thread1 永远在最后
@@ -112,8 +128,8 @@ int main(void){
     os_thread_init(&thread1, "Thread1", thread1_entry, 1000, thread1_stack, sizeof(thread1_stack), 10, 10);
     os_thread_startup(&thread1);
 
-    os_thread_init(&thread2, "Thread2", thread1_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
-    os_thread_startup(&thread2);
+//    os_thread_init(&thread2, "Thread2", thread1_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
+//    os_thread_startup(&thread2);
 //
 //    os_thread_init(&thread3, "Thread3", thread1_entry, 200, thread3_stack, sizeof(thread3_stack), 5, 20);
 //    os_thread_startup(&thread3);
