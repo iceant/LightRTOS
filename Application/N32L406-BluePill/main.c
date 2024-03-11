@@ -42,9 +42,10 @@ static void SetDateTime(uint16_t year, uint8_t month, uint8_t  date, uint8_t hou
 
 static void NTP_Sync(void){
     struct tm datetime={0};
+    int nCount = 10;
     do{
         ESP01S_CIPSNTPTIME(&ESP01S_Device, &datetime, 3000);
-    } while (datetime.tm_mday==0);
+    } while ((datetime.tm_mday==0 || datetime.tm_year==1970) && nCount-- );
     
     SetDateTime(datetime.tm_year
             , datetime.tm_mon+1
