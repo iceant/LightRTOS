@@ -21,8 +21,8 @@ void BSP_I2C1__TimeOut(I2C_Module* I2Cx, void* userdata)
 
 void BSP_I2C1_Init(void){
     hw_i2c_master_config(BSP_I2Cx
-            , GPIOA, GPIO_PIN_4
-            , GPIOA, GPIO_PIN_5
+            , GPIOB, GPIO_PIN_8
+            , GPIOB, GPIO_PIN_7
             , BSP_I2Cx_MASTER_ADDRESS
             , BSP_I2Cx_SPEED);
 }

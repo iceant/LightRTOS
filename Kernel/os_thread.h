@@ -82,7 +82,7 @@ os_err_t os_thread_suspend(os_thread_t * thread);
 
 os_err_t os_thread_resume(os_thread_t* thread);
 
-os_err_t os_thread_exit(os_thread_t * thread);
+os_err_t os_thread_exit(void);
 
 void os_thread_sleep(os_tick_t tick);
 

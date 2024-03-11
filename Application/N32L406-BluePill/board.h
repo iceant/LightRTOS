@@ -42,6 +42,11 @@
 #include <ESP01S.h>
 #endif /*INCLUDED_ESP01S_H*/
 
+#ifndef INCLUDED_OLED_H
+#include <OLED.h>
+#endif /*INCLUDED_OLED_H*/
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 

@@ -12,8 +12,9 @@ static void os_thread__exit(os_thread_t * thread){
     thread->state = OS_THREAD_STATE_EXIT;
     thread->remain_ticks = 0;
     thread->current_priority = OS_PRIORITY_MAX;
-    OS_LIST_REMOVE(&thread->ready_node);
+    os_scheduler_remove(thread);
     OS_LIST_REMOVE(&thread->wait_node);
+    os_timer_remove(&thread->timer_node);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,12 +81,13 @@ os_err_t os_thread_resume(os_thread_t* thread){
     return os_scheduler_push_back(thread);
 }
 
-os_err_t os_thread_exit(os_thread_t * thread)
+os_err_t os_thread_exit(void)
 {
+    os_thread_t* thread = os_thread_self();
     if(thread->thread_exit){
         thread->thread_exit(thread);
     }
-    return OS_EOK;
+    return os_scheduler_schedule();
 }
 
 void os_thread_sleep(os_tick_t tick)
