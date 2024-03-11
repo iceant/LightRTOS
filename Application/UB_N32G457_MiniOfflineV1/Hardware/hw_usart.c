@@ -2,14 +2,21 @@
 #include <hw_gpio.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
+
+void hw_usart_dma_enable(void){
+    RCC_EnableAHBPeriphClk(RCC_AHB_PERIPH_DMA1, ENABLE);
+    RCC_EnableAHBPeriphClk(RCC_AHB_PERIPH_DMA2, ENABLE);
+}
+
 void hw_usart_configuration(USART_Module* USARTx, uint32_t BaudRate, uint32_t Remap)
 {
 
     USART_InitType USART_InitStructure;
 
+    RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_AFIO, ENABLE);
+
     /* Enable GPIO clock */
     if(Remap!=0){
-        RCC_EnableAPB2PeriphClk(RCC_APB2_PERIPH_AFIO, ENABLE);
         GPIO_ConfigPinRemap(Remap, ENABLE);
     }
 
@@ -227,12 +234,14 @@ void hw_usart_dma_send(USART_Module * USARTx, uint8_t* TxBuffer, size_t TxBuffer
     DMA_InitStructure.Mem2Mem        = DMA_M2M_DISABLE;
     DMA_Init(DMA_CHx, &DMA_InitStructure);
 
+//    USART_EnableDMA(USARTx, USART_DMAREQ_RX | USART_DMAREQ_TX, ENABLE);
+
     USART_EnableDMA(USARTx, USART_DMAREQ_TX, ENABLE);
     DMA_EnableChannel(DMA_CHx, ENABLE);
-//
-//    /* wait for DMA Tx DONE! */
-//    while (DMA_GetFlagStatus(DMA_CH_TxFlag, DMAx) == RESET)
-//    {}
+
+    /* wait for DMA Tx DONE! */
+    while (DMA_GetFlagStatus(DMA_CH_TxFlag, DMAx) == RESET)
+    {}
 }
 
 

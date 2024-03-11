@@ -109,6 +109,7 @@ A7670C_Result A7670C_RequestWithCmd(A7670C_RxHandler_T rxHandler, void* userdata
     A7670C__Instance.usart->setRxHandler(rxHandler, userdata);
     A7670C_Send(command, strlen(command));
     err = A7670C_TimedWait(ticks);
+    A7670C__Instance.usart->setRxHandler(0, 0);
     A7670C_UnLock();
 
     return (err==OS_ETIMEOUT)?kA7670C_Result_TIMEOUT:kA7670C_Result_OK;;
@@ -128,6 +129,7 @@ A7670C_Result A7670C_RequestWithArgs(A7670C_RxHandler_T rxHandler, void* userdat
     A7670C__Instance.usart->setRxHandler(rxHandler, userdata);
     A7670C_Send(A7670C__Printf_Buffer, size);
     err = A7670C_TimedWait(ticks);
+    A7670C__Instance.usart->setRxHandler(0, 0);
     A7670C_UnLock();
 
     return (err==OS_ETIMEOUT)?kA7670C_Result_TIMEOUT:kA7670C_Result_OK;
