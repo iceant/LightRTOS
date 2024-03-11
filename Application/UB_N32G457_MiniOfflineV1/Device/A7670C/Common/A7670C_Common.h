@@ -41,6 +41,7 @@ typedef struct A7670C_IO_S{
     void (*setRxHandler)(void* handler, void* userdata);
     os_err_t (*wait)(os_time_t timeout_ms);
     os_err_t (*send)(uint8_t * data, os_size_t size);
+    void (*notify)(void);
 }A7670C_IO_T;
 
 
@@ -85,7 +86,6 @@ typedef enum A7670C_Client_Index{
 ////
 __STATIC_FORCEINLINE void A7670C_NopDelay(uint32_t delay){
     while(delay--){
-        __NOP();
     }
 }
 
@@ -119,5 +119,7 @@ A7670C_Result A7670C_RequestWithCmd(A7670C_RxHandler_T rxHandler, void* userdata
 A7670C_Result A7670C_RequestWithHandler(A7670C_RxHandler_T rxHandler, void* userdata, os_tick_t ticks);
 
 A7670C_Result A7670C_TimedWait(os_tick_t ticks);
+
+void A7670C_Notify(void);
 
 #endif /* INCLUDED_A7670C_COMMON_H */

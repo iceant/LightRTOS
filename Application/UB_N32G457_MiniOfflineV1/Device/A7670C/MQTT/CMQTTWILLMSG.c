@@ -9,6 +9,8 @@ static A7670C_RxHandler_Result Test_Handler(sdk_ringbuffer_t *buffer, void* ud)
     bool* result = (bool*)ud;
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1){
         *result = true;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
@@ -16,7 +18,7 @@ static A7670C_RxHandler_Result Test_Handler(sdk_ringbuffer_t *buffer, void* ud)
 
 A7670C_Result A7670C_CMQTTWILLMSG_Test(bool* result, uint32_t timeout_ms)
 {
-    A7670C_Result err = A7670C_RequestWithCmd(Test_Handler, &result, os_tick_from_ms(timeout_ms), "AT+CMQTTWILLMSG=?\r\n");
+    A7670C_Result err = A7670C_RequestWithCmd(Test_Handler, &result, os_tick_from_millisecond(timeout_ms), "AT+CMQTTWILLMSG=?\r\n");
     if(err==kA7670C_Result_TIMEOUT){
         *result = false;
     }
@@ -46,7 +48,8 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t *buffer, void* ud)
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1 /*接收结束: 成功*/){
         result->response->code=kA7670C_Response_Code_OK;
         result->response->err_code = 0;
-        
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     
@@ -63,6 +66,8 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t *buffer, void* ud)
             /* 一般错误，没有错误号 */
             result->response->err_code = -1;
         }
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     
@@ -78,7 +83,7 @@ A7670C_Result A7670C_CMQTTWILLMSG_Write(A7670C_CMQTTWILLMSG_Write_Response* resu
 {
     int message_length = strlen(message);
     A7670C_CMQTTWILLMSG_Write_Request request={.response=result, .message = message, .message_length=message_length, .send_flag = false};
-    A7670C_Result err = A7670C_RequestWithArgs(Write_Handler, &request, os_tick_from_ms(timeout_ms), "AT+CMQTTWILLMSG=%d,%d,%d\r\n"
+    A7670C_Result err = A7670C_RequestWithArgs(Write_Handler, &request, os_tick_from_millisecond(timeout_ms), "AT+CMQTTWILLMSG=%d,%d,%d\r\n"
             , client_index
             , message_length
             , qos);

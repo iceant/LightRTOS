@@ -4,18 +4,25 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
+#define ARRAY_SIZE(A) ((sizeof(A))/sizeof((A)[0]))
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
 
 static A7670C_RxHandler_Result Test_Handler(sdk_ringbuffer_t *buffer, void *ud) {
     bool *result = (bool *) ud;
     if (sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")) {
         *result = true;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
 }
 
 A7670C_Result A7670C_CGDCONT_Test(bool *result, uint32_t timeout_ms) {
-    A7670C_Result err = A7670C_RequestWithCmd(Test_Handler, &result, os_tick_from_ms(timeout_ms), "AT+CGDCONT=?\r\n");
+    A7670C_Result err = A7670C_RequestWithCmd(Test_Handler, &result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT=?\r\n");
     if (err == kA7670C_Result_TIMEOUT) {
         *result = false;
     }
@@ -66,7 +73,7 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void *ud) 
                                 /*APN*/
                                 int size = iter.end - iter.start -2;
                                 if(size>0){
-                                    int dst_size = OS_ARRAY_SIZE(result->records[record_count].APN) - 1;
+                                    int dst_size = ARRAY_SIZE(result->records[record_count].APN) - 1;
                                     size = dst_size > size ? size : dst_size;
                                     sdk_ringbuffer_memcpy((uint8_t *) result->records[record_count].APN, buffer, iter.start+1, size);
                                 }
@@ -77,7 +84,7 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void *ud) 
                                 /*PDP_addr*/
                                 int size = iter.end - iter.start -2;
                                 if(size>0) {
-                                    int dst_size = OS_ARRAY_SIZE(result->records[record_count].PDP_addr) - 1;
+                                    int dst_size = ARRAY_SIZE(result->records[record_count].PDP_addr) - 1;
                                     size = dst_size > size ? size : dst_size;
                                     sdk_ringbuffer_memcpy((uint8_t *) result->records[record_count].PDP_addr, buffer,
                                                          iter.start + 1, size);
@@ -131,13 +138,16 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void *ud) 
         };
 
         result->record_count = record_count;
-
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if (sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n") != -1 /*接收结束*/) {
         result->code = kA7670C_Response_Code_ERROR;
         result->err_code = -1;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
@@ -148,7 +158,7 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void *ud) 
 A7670C_Result A7670C_CGDCONT_Read(A7670C_CGDCONT_Read_Response *result, uint32_t timeout_ms) {
     result->err_code = -1;
     result->record_count = 0;
-    A7670C_Result err = A7670C_RequestWithCmd(Read_Handler, result, os_tick_from_ms(timeout_ms), "AT+CGDCONT?\r\n");
+    A7670C_Result err = A7670C_RequestWithCmd(Read_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT?\r\n");
     return err;
 }
 
@@ -161,12 +171,16 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t *buffer, void *ud)
     if (sdk_ringbuffer_find_str(buffer, 0, "OK\r\n") != -1 /*接收结束: 成功*/) {
         result->code =kA7670C_Response_Code_OK;
         result->err_code = -1;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if (sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n") != -1 /*接收结束: 错误*/) {
         result->code  = kA7670C_Response_Code_ERROR;
         result->err_code = -1;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
@@ -181,8 +195,9 @@ const char* pdp_type_cstr(A7670C_CGDCONT_PDP PDP_type){
             return "IPV4V6";
         case kA7670C_CGDCONT_PDP_IPV6:
             return "IPV6";
+        default:
+            return "";
     }
-    return "";
 }
 
 A7670C_Result A7670C_CGDCONT_Write(A7670C_CGDCONT_Write_Response *result,
@@ -199,35 +214,35 @@ A7670C_Result A7670C_CGDCONT_Write(A7670C_CGDCONT_Write_Response *result,
     result->err_code = -1;
 
     if (request_type != -1) {
-        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms),
+        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms),
                                      "AT+CGDCONT=%d,\"%s\",\"%s\",\"%s\",%d,%d,%d,%d\r\n", cid, pdp_type_cstr(PDP_type), APN, PDP_addr,
                                      d_comp, h_comp, ipv4_ctrl, request_type
         );
     } else if (ipv4_ctrl != kA7670C_CGDCONT_IPv4_NULL) {
-        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\",\"%s\",%d,%d,%d\r\n",
+        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\",\"%s\",%d,%d,%d\r\n",
                                      cid, pdp_type_cstr(PDP_type), APN, PDP_addr, d_comp, h_comp, ipv4_ctrl
         );
     } else if (h_comp != kA7670C_CGDCONT_HeaderCompression_NULL) {
-        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\",\"%s\",%d,%d\r\n", cid,
+        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\",\"%s\",%d,%d\r\n", cid,
                                      pdp_type_cstr(PDP_type), APN, PDP_addr, d_comp, h_comp
         );
     } else if (d_comp != kA7670C_CGDCONT_DataCompression_NULL) {
-        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\",\"%s\",%d\r\n", cid,
+        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\",\"%s\",%d\r\n", cid,
                                      pdp_type_cstr(PDP_type), APN, PDP_addr, d_comp
         );
     } else if (PDP_addr != NULL) {
-        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\",\"%s\"\r\n", cid,
+        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\",\"%s\"\r\n", cid,
                                      pdp_type_cstr(PDP_type), APN, PDP_addr
         );
     } else if (APN != NULL) {
-        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\"\r\n", cid, pdp_type_cstr(PDP_type),
+        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT=%d,\"%s\",\"%s\"\r\n", cid, pdp_type_cstr(PDP_type),
                                      APN
         );
     } else if (PDP_type != kA7670C_CGDCONT_PDP_NULL) {
-        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms), "AT+CGDCONT=%d,\"%s\"\r\n", cid, pdp_type_cstr(PDP_type)
+        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT=%d,\"%s\"\r\n", cid, pdp_type_cstr(PDP_type)
         );
     } else {
-        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms), "AT+CGDCONT=%d\r\n", cid
+        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT=%d\r\n", cid
         );
     }
 
@@ -240,11 +255,15 @@ static A7670C_RxHandler_Result Exec_Handler(sdk_ringbuffer_t *buffer, void *ud) 
     bool *result = (bool *) ud;
     if (sdk_ringbuffer_find_str(buffer, 0, "OK\r\n") != -1) {
         *result = true;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if (sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n") != -1) {
         *result = false;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
@@ -252,7 +271,7 @@ static A7670C_RxHandler_Result Exec_Handler(sdk_ringbuffer_t *buffer, void *ud) 
 
 A7670C_Result A7670C_CGDCONT_Exec(os_bool_t *result, uint32_t timeout_ms) {
     A7670C_Result err;
-    err = A7670C_RequestWithArgs(Exec_Handler, result, os_tick_from_ms(timeout_ms), "AT+CGDCONT\r\n");
+    err = A7670C_RequestWithArgs(Exec_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CGDCONT\r\n");
     return err;
 }
 

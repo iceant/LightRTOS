@@ -11,6 +11,8 @@ static A7670C_RxHandler_Result Test_Handler(sdk_ringbuffer_t * buffer, void* ud)
     bool* result = (bool*)ud;
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1){
         *result = true;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
@@ -18,7 +20,7 @@ static A7670C_RxHandler_Result Test_Handler(sdk_ringbuffer_t * buffer, void* ud)
 
 A7670C_Result A7670C_CMQTTCONNECT_Test(bool* result, uint32_t timeout_ms)
 {
-    A7670C_Result err = A7670C_RequestWithCmd(Test_Handler, &result, os_tick_from_ms(timeout_ms), "AT+CMQTTCONNECT=?\r\n");
+    A7670C_Result err = A7670C_RequestWithCmd(Test_Handler, &result, os_tick_from_millisecond(timeout_ms), "AT+CMQTTCONNECT=?\r\n");
     if(err==kA7670C_Result_TIMEOUT){
         *result = false;
     }
@@ -148,9 +150,12 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void* ud)
             if(find==0){
                 handle_record(&find_result, 1, result);
             }
-            
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }else{
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_RESET;
         }
     }
@@ -161,7 +166,7 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void* ud)
 
 A7670C_Result A7670C_CMQTTCONNECT_Read(A7670C_CMQTTCONNECT_Read_Response* result, uint32_t timeout_ms)
 {
-    A7670C_Result err = A7670C_RequestWithCmd(Read_Handler, result, os_tick_from_ms(timeout_ms), "AT+CMQTTCONNECT?\r\n");
+    A7670C_Result err = A7670C_RequestWithCmd(Read_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CMQTTCONNECT?\r\n");
     return err;
 }
 
@@ -191,7 +196,8 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t * buffer, void* ud
              
              +CMQTTCONNECT: <client_index>,0
              */
-            
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }
         
@@ -206,6 +212,8 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t * buffer, void* ud
             result->code = kA7670C_Response_Code_OK;
 
             printf("Write_Handler: 2\n");
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }
         
@@ -218,6 +226,8 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t * buffer, void* ud
 
             printf("Write_Handler: 3\n");
             result->code=kA7670C_Response_Code_ERROR;
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }
 
@@ -228,6 +238,8 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t * buffer, void* ud
         
         result->code = kA7670C_Response_Code_ERROR;
         printf("Write_Handler: 4\n");
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     
@@ -255,7 +267,7 @@ A7670C_Result A7670C_CMQTTCONNECT_Write(A7670C_CMQTTCONNECT_Write_Response* resu
     result->err_code = -1;
 
     if(username!=0 && password!=0){
-        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_ms(timeout_ms)
+        err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms)
                 , "AT+CMQTTCONNECT=%d,\"%s\",%d,%d,\"%s\",\"%s\"\r\n"
                 , client_index
                 , server_addr
@@ -265,7 +277,7 @@ A7670C_Result A7670C_CMQTTCONNECT_Write(A7670C_CMQTTCONNECT_Write_Response* resu
                 , password
         );
     }else if(username!=0 && username_size>0){
-        err = A7670C_RequestWithArgs(Write_Handler, result,  os_tick_from_ms(timeout_ms)
+        err = A7670C_RequestWithArgs(Write_Handler, result,  os_tick_from_millisecond(timeout_ms)
                 , "AT+CMQTTCONNECT=%d,\"%s\",%d,%d,\"%s\"\r\n"
                 , client_index
                 , server_addr
@@ -274,7 +286,7 @@ A7670C_Result A7670C_CMQTTCONNECT_Write(A7670C_CMQTTCONNECT_Write_Response* resu
                 , username
         );
     }else{
-        err = A7670C_RequestWithArgs(Write_Handler, result,  os_tick_from_ms(timeout_ms)
+        err = A7670C_RequestWithArgs(Write_Handler, result,  os_tick_from_millisecond(timeout_ms)
                 , "AT+CMQTTCONNECT=%d,\"%s\",%d,%d\r\n"
                 , client_index
                 , server_addr

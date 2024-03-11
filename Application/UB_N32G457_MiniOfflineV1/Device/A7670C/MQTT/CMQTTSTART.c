@@ -14,13 +14,16 @@ static A7670C_RxHandler_Result Exec_Handler(sdk_ringbuffer_t *buffer, void* ud)
     if(find_status==0){
         result->code = kA7670C_Response_Code_OK;
         result->err_code = sdk_ringbuffer_strtoul(buffer, find_text.start, 0, 0);
-
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1 /*接收结束: 错误*/){
         result->code = kA7670C_Response_Code_ERROR;
         result->err_code = -1;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
@@ -31,6 +34,6 @@ A7670C_Result A7670C_CMQTTSTART_Exec(A7670C_CMQTTSTART_Exec_Response* result, ui
     memset(result, 0, sizeof(*result));
     A7670C_Result err;
     result->err_code=-1;
-    err = A7670C_RequestWithCmd(Exec_Handler, result, os_tick_from_ms(timeout_ms), "AT+CMQTTSTART\r\n");
+    err = A7670C_RequestWithCmd(Exec_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CMQTTSTART\r\n");
     return err;
 }

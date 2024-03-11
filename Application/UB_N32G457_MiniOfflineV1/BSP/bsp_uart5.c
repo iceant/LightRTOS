@@ -12,7 +12,6 @@ typedef struct BSP_UART5_RxHandler_Record{
 }BSP_UART5_RxHandler_Record;
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define UART5_RX_THREAD_STACK_SIZE 1024
@@ -37,19 +36,11 @@ static void UART5_RxThreadEntry(void* p){
             sdk_hex_dump("USART5_RxBuffer", UART5_RxBuffer.buffer, used);
         }
         if(bsp_uart5__rx_handler.rx_handler){
-            int result = bsp_uart5__rx_handler.rx_handler(&UART5_RxBuffer, bsp_uart5__rx_handler.userdata);
-            if(result==BSP_UART5_RX_STATE_DONE){
-                UART5_RxBufferUsed = 0;
+            bsp_uart5__rx_handler.rx_handler(&UART5_RxBuffer, bsp_uart5__rx_handler.userdata);
+        }else{
+            if(sdk_ringbuffer_is_full(&UART5_RxBuffer)){
                 sdk_ringbuffer_reset(&UART5_RxBuffer);
-                os_sem_release(&bsp_uart5__rx_handler.lock);
-                continue;
-            }else if(result==BSP_UART5_RX_STATE_RESET){
-                sdk_ringbuffer_reset(&UART5_RxBuffer);
-                continue;
             }
-        }
-        if(sdk_ringbuffer_is_full(&UART5_RxBuffer)){
-            sdk_ringbuffer_reset(&UART5_RxBuffer);
         }
     }
 }
@@ -99,10 +90,14 @@ void BSP_UART5_SetRxHandler(BSP_UART5_RxHandler rxHandler, void* userdata)
 
 os_err_t BSP_UART5_Send(uint8_t * data, os_size_t size)
 {
-    sdk_ringbuffer_reset(&UART5_RxBuffer);
+    UART5_RxBufferUsed = 0;
+
     sdk_hex_dump("UART5_Send", data, size);
+
+    sdk_ringbuffer_reset(&UART5_RxBuffer);
     hw_usart_dma_send(UART5, data, size);
 //    hw_usart_send(UART5, data, size);
+
     return OS_EOK;
 }
 
@@ -110,7 +105,11 @@ os_err_t BSP_UART5_TimeWait(os_tick_t ticks)
 {
 
     os_err_t err = os_sem_take(&bsp_uart5__rx_handler.lock, ticks);
-    printf("BSP_UART5_TimeWait: %d ms, handler:%x return: %d\n", ticks, bsp_uart5__rx_handler.rx_handler,  err);
+    printf("BSP_UART5_TimeWait: %d ticks, handler:%x return: %d\n", ticks, bsp_uart5__rx_handler.rx_handler,  err);
     return err;
+}
+
+void BSP_UART5_Notify(void){
+    os_sem_release(&bsp_uart5__rx_handler.lock);
 }
 

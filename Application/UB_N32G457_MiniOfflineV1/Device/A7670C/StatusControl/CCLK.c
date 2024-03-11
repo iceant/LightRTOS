@@ -10,6 +10,7 @@ static A7670C_RxHandler_Result Test_Handler(sdk_ringbuffer_t *buffer, void* ud)
     if(sdk_ringbuffer_find_str(buffer,0, "OK\r\n")!=-1){
         *result = true;
         sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     kA7670C_RxHandler_Result_CONTINUE;
@@ -40,8 +41,11 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void* ud)
             sdk_ringbuffer_memcpy(result->time, buffer, find_result.start+1, size);
             result->time[size] = '\0';
             sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }else{
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_RESET;
         }
     }
@@ -67,11 +71,14 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t *buffer, void* ud)
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1 /*接收结束: 成功*/){
         result->code = kA7670C_Response_Code_OK;
         sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1 /*接收结束: 错误*/){
         result->code = kA7670C_Response_Code_ERROR;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
@@ -104,3 +111,4 @@ A7670C_CCLK_DateTime* A7670C_CCLK_ToDateTime(A7670C_CCLK_DateTime* result, const
 
     return result;
 }
+
