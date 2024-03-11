@@ -19,8 +19,11 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void* ud){
             response->timezone = sdk_ringbuffer_strtoul(buffer, host_end+1, 0, 0);
 
             sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }else{
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_RESET;
         }
     }
@@ -42,12 +45,15 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t *buffer, void* ud)
         response->code = kA7670C_Response_Code_OK;
 
         sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1){
         assert(response);
         response->code = kA7670C_Response_Code_ERROR;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
@@ -78,12 +84,15 @@ static A7670C_RxHandler_Result Exec_Handler(sdk_ringbuffer_t * buffer, void* ud)
         }
 
         sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1 /*接收结束: 错误*/){
         response->code = kA7670C_Response_Code_ERROR;
         response->err_code = 0;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 

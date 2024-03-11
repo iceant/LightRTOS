@@ -12,7 +12,6 @@ typedef struct BSP_UART5_RxHandler_Record{
 }BSP_UART5_RxHandler_Record;
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define UART5_RX_THREAD_STACK_SIZE 1024
@@ -24,8 +23,9 @@ static os_sem_t UART5_RxSem;
 static os_thread_t UART5_RxThread;
 static uint8_t UART5_RxBlock[UART5_RX_BLOCK_SIZE];
 static sdk_ringbuffer_t UART5_RxBuffer;
-static BSP_UART5_RxHandler_Record bsp_uart5__rx_handler;
+static BSP_UART5_RxHandler_Record bsp_uart5__rx_handler={.rx_handler  = 0, .userdata = 0};
 static os_size_t UART5_RxBufferUsed = 0;
+
 static void UART5_RxThreadEntry(void* p){
     printf("UART5_RxThreadEntry Startup...\n");
     while(1){
@@ -36,19 +36,11 @@ static void UART5_RxThreadEntry(void* p){
             sdk_hex_dump("USART5_RxBuffer", UART5_RxBuffer.buffer, used);
         }
         if(bsp_uart5__rx_handler.rx_handler){
-            int result = bsp_uart5__rx_handler.rx_handler(&UART5_RxBuffer, bsp_uart5__rx_handler.userdata);
-            if(result==BSP_UART5_RX_STATE_DONE){
-                UART5_RxBufferUsed = 0;
+            bsp_uart5__rx_handler.rx_handler(&UART5_RxBuffer, bsp_uart5__rx_handler.userdata);
+        }else{
+            if(sdk_ringbuffer_is_full(&UART5_RxBuffer)){
                 sdk_ringbuffer_reset(&UART5_RxBuffer);
-                os_sem_release(&bsp_uart5__rx_handler.lock);
-                continue;
-            }else if(result==BSP_UART5_RX_STATE_RESET){
-                sdk_ringbuffer_reset(&UART5_RxBuffer);
-                continue;
             }
-        }
-        if(sdk_ringbuffer_is_full(&UART5_RxBuffer)){
-            sdk_ringbuffer_reset(&UART5_RxBuffer);
         }
     }
 }
@@ -76,6 +68,7 @@ void BSP_UART5_Init(void){
     sdk_ringbuffer_init(&UART5_RxBuffer, UART5_RxBlock, sizeof(UART5_RxBlock));
     os_sem_init(&UART5_RxSem, "UART5_RxSem", 0, OS_QUEUE_FIFO);
 
+    hw_usart_dma_enable();
     hw_usart_configuration(UART5, 115200, GPIO_RMP2_UART5);
     hw_usart_enable_irq(UART5, UART5_IRQn, 0, HW_USART_IRQ_MODE_RX);
 
@@ -97,10 +90,14 @@ void BSP_UART5_SetRxHandler(BSP_UART5_RxHandler rxHandler, void* userdata)
 
 os_err_t BSP_UART5_Send(uint8_t * data, os_size_t size)
 {
-    sdk_ringbuffer_reset(&UART5_RxBuffer);
-//    hw_usart_dma_send(UART5, data, size);
+    UART5_RxBufferUsed = 0;
+
     sdk_hex_dump("UART5_Send", data, size);
-    hw_usart_send(UART5, data, size);
+
+    sdk_ringbuffer_reset(&UART5_RxBuffer);
+    hw_usart_dma_send(UART5, data, size);
+//    hw_usart_send(UART5, data, size);
+
     return OS_EOK;
 }
 
@@ -108,7 +105,11 @@ os_err_t BSP_UART5_TimeWait(os_tick_t ticks)
 {
 
     os_err_t err = os_sem_take(&bsp_uart5__rx_handler.lock, ticks);
-    printf("BSP_UART5_TimeWait: %d ms, handler:%x return: %d\n", ticks, bsp_uart5__rx_handler.rx_handler,  err);
+    printf("BSP_UART5_TimeWait: %d ticks, handler:%x return: %d\n", ticks, bsp_uart5__rx_handler.rx_handler,  err);
     return err;
+}
+
+void BSP_UART5_Notify(void){
+    os_sem_release(&bsp_uart5__rx_handler.lock);
 }
 

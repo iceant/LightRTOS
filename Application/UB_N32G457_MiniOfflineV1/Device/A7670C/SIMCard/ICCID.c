@@ -13,7 +13,8 @@ static  A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t * buffer, void* ud
             sdk_ringbuffer_memcpy(result->ICCID, buffer, text.start, size);
             result->ICCID[size]='\0';
         }
-
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
@@ -22,6 +23,6 @@ static  A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t * buffer, void* ud
 
 A7670C_Result A7670C_ICCID_Read(A7670C_ICCID_Read_Response* response, uint32_t timeout_ms)
 {
-    return A7670C_RequestWithCmd(Read_Handler, response, os_tick_from_ms(timeout_ms), "AT+CICCID\r\n");
+    return A7670C_RequestWithCmd(Read_Handler, response, os_tick_from_millisecond(timeout_ms), "AT+CICCID\r\n");
 }
 

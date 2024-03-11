@@ -12,6 +12,8 @@
 static A7670C_RxHandler_Result A7670C_AT__Handler(sdk_ringbuffer_t * buffer, void* ud){
     if(sdk_ringbuffer_find_str(buffer, 0, "AT\r\r\nOK\r\n")!=-1
         || sdk_ringbuffer_find_str(buffer, 0, "*ATREADY: 1")!=-1){
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
@@ -27,7 +29,9 @@ A7670C_Result A7670C_AT(os_time_t timeout_ms){
 ////
 static A7670C_RxHandler_Result WaitPBDone_Handler(sdk_ringbuffer_t* buffer, void*ud){
     if(sdk_ringbuffer_find_str(buffer, 0, "PB DONE\r\n")!=-1){
+        sdk_ringbuffer_reset(buffer);
         return kA7670C_RxHandler_Result_DONE;
+        A7670C_Notify();
     }
     return kA7670C_RxHandler_Result_CONTINUE;
 }
@@ -62,7 +66,7 @@ __A7670C__Boot:
         if(nRetry++==10){
             goto __A7670C__Boot;
         }
-        os_thread_mdelay(1000);
+        A7670C_NopDelay(0x3FFFFF);
     }
 
     nRetry = 0;
@@ -76,7 +80,7 @@ __A7670C__Boot:
         if(nRetry++==10){
             return kA7670C_Result_TIMEOUT;
         }
-        os_thread_mdelay(1000);
+        A7670C_NopDelay(0x3FFFFF);
     }
     
     nRetry = 0;
@@ -86,19 +90,20 @@ __A7670C__Boot:
         result = A7670C_CSQ_Exec(&CSQ_Exec_Response, 12000);
         if(CSQ_Exec_Response.code == kA7670C_Response_Code_OK){
             printf(" rssi: %d, ber: %d\n", CSQ_Exec_Response.rssi, CSQ_Exec_Response.ber);
-            if(CSQ_Exec_Response.rssi>0 && CSQ_Exec_Response.rssi<31){
+            if(CSQ_Exec_Response.rssi>0 && CSQ_Exec_Response.rssi<=31){
                 break;
             }
         }
         if(nRetry++==10){
             return kA7670C_Result_TIMEOUT;
         }
-        os_thread_mdelay(1000);
+        A7670C_NopDelay(0x3FFFFF);
     }
-    
+
+#if 0
     nRetry = 0;
     while(1){
-        printf("A7670C CS service...");
+        printf("A7670C CS service(CREG)...");
         A7670C_CREG_Read_Response CREG_Read_Response;
         result = A7670C_CREG_Read(&CREG_Read_Response, 12000);
         if(CREG_Read_Response.code == kA7670C_Response_Code_OK){
@@ -110,9 +115,10 @@ __A7670C__Boot:
         if(nRetry++==10){
             return kA7670C_Result_TIMEOUT;
         }
-        os_thread_mdelay(1000);
+        A7670C_NopDelay(0x3FFFFF);
     }
-    
+#endif
+
     int  A7670C_PS_Flag = 0;
     nRetry = 0;
     while(1){
@@ -129,7 +135,7 @@ __A7670C__Boot:
         if(nRetry++==10){
             break;
         }
-        os_thread_mdelay(1000);
+        A7670C_NopDelay(0x3FFFFF);
     }
     
     if(A7670C_PS_Flag==0){
@@ -148,7 +154,7 @@ __A7670C__Boot:
             if(nRetry++==10){
                 return kA7670C_Result_TIMEOUT;
             }
-            os_thread_mdelay(1000);
+            A7670C_NopDelay(0x3FFFFF);
         }
     }
     
@@ -166,15 +172,15 @@ __A7670C__Boot:
         if(nRetry++==10){
             return kA7670C_Result_TIMEOUT;
         }
-        os_thread_mdelay(1000);
+        A7670C_NopDelay(0x3FFFFF);
     }
 
-    while(1){
-        if(A7670C_WaitPBDone(120000)==kA7670C_Result_OK){
-            printf("PB DONE!!!\n");
-            break;
-        }
-    }
+//    while(1){
+//        if(A7670C_WaitPBDone(120000)==kA7670C_Result_OK){
+//            printf("PB DONE!!!\n");
+//            break;
+//        }
+//    }
 
     return kA7670C_Result_OK;
     

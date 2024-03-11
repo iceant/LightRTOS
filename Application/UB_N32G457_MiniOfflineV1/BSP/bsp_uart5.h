@@ -38,6 +38,8 @@ os_err_t BSP_UART5_TimeWait(os_tick_t ticks);
 
 os_err_t BSP_UART5_Send(uint8_t * data, os_size_t size);
 
+void BSP_UART5_Notify(void);
+
 #endif /*INCLUDED_BSP_UART5_H*/
 
 

@@ -14,6 +14,8 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t* buffer, void* ud)
     A7670C_HTTPDATA_Write_Request* request = (A7670C_HTTPDATA_Write_Request*)ud;
     if(request->data_send_flag==OS_TRUE && sdk_ringbuffer_find_str(buffer,0, "OK\r\n")!=-1){
         request->response->code = kA7670C_Response_Code_OK;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     
@@ -25,6 +27,8 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t* buffer, void* ud)
     
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1){
         request->response->code = kA7670C_Response_Code_ERROR;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     

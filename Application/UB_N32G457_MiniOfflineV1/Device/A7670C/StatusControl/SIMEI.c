@@ -7,6 +7,8 @@ static A7670C_RxHandler_Result SIMEI_Test_Handler(sdk_ringbuffer_t *buffer, void
     bool* result = (bool*)ud;
     if(sdk_ringbuffer_find_str(buffer,0, "OK\r\n")!=-1){
         *result = true;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
@@ -14,7 +16,7 @@ static A7670C_RxHandler_Result SIMEI_Test_Handler(sdk_ringbuffer_t *buffer, void
 
 A7670C_Result A7670C_SIMEI_Test(bool* result, uint32_t timeout_ms)
 {
-    A7670C_Result err = A7670C_RequestWithCmd(SIMEI_Test_Handler, &result, os_tick_from_ms(timeout_ms), "AT+SIMEI=?\r\n");
+    A7670C_Result err = A7670C_RequestWithCmd(SIMEI_Test_Handler, &result, os_tick_from_millisecond(timeout_ms), "AT+SIMEI=?\r\n");
     if(err==kA7670C_Result_TIMEOUT){
         *result = false;
     }
@@ -35,8 +37,12 @@ static A7670C_RxHandler_Result SIMEI_Read_Handler(sdk_ringbuffer_t *buffer, void
             int size = find_result.end - find_result.start;
             sdk_ringbuffer_memcpy(result->value, buffer, find_result.start, size);
             result->value[size] = '\0';
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }else{
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_RESET;
         }
     }
@@ -47,7 +53,7 @@ static A7670C_RxHandler_Result SIMEI_Read_Handler(sdk_ringbuffer_t *buffer, void
 
 A7670C_Result A7670C_SIMEI_Read(A7670C_SIMEI_Read_Response* result, uint32_t timeout_ms)
 {
-    A7670C_Result err = A7670C_RequestWithCmd(SIMEI_Read_Handler, result, os_tick_from_ms(timeout_ms), "AT+SIMEI?\r\n");
+    A7670C_Result err = A7670C_RequestWithCmd(SIMEI_Read_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+SIMEI?\r\n");
     return err;
 }
 
@@ -60,11 +66,14 @@ static A7670C_RxHandler_Result SIMEI_Write_Handler(sdk_ringbuffer_t * buffer, vo
 
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1 /*接收结束: 成功*/){
         *result = true;
+        sdk_ringbuffer_reset(buffer);
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1 /*接收结束: 错误*/){
         *result = false;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
@@ -74,7 +83,7 @@ static A7670C_RxHandler_Result SIMEI_Write_Handler(sdk_ringbuffer_t * buffer, vo
 
 A7670C_Result A7670C_SIMEI_Write(bool* result, const char* IMEI, uint32_t timeout_ms)
 {
-    A7670C_Result err = A7670C_RequestWithArgs(SIMEI_Write_Handler, result, os_tick_from_ms(timeout_ms), "AT+SIMEI=%s\r\n", IMEI);
+    A7670C_Result err = A7670C_RequestWithArgs(SIMEI_Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+SIMEI=%s\r\n", IMEI);
     return err;
 }
 

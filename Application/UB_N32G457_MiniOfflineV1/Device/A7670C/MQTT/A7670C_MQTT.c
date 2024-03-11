@@ -42,6 +42,8 @@ static A7670C_RxHandler_Result A7670C_CMQTTRX_DownstreamHandler(sdk_ringbuffer_t
     if(find==0){
         find = sdk_ringbuffer_cut(&find_result, buffer, 0, (int)buffer_used, (const char*)"+CMQTTRXSTART: ", "\r\n");
         if(find!=0) {
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             res = kA7670C_RxHandler_Result_RESET;
             /*数据不正常，清除*/
             goto __skip;
@@ -59,6 +61,8 @@ static A7670C_RxHandler_Result A7670C_CMQTTRX_DownstreamHandler(sdk_ringbuffer_t
             /*topic*/
             find = sdk_ringbuffer_cut(&find_result, buffer, find_start, buffer_used, "+CMQTTRXTOPIC: ", "\r\n");
             if(find!=0){
+                sdk_ringbuffer_reset(buffer);
+                A7670C_Notify();
                 res = kA7670C_RxHandler_Result_RESET;
                 goto __skip;
             }
@@ -70,6 +74,8 @@ static A7670C_RxHandler_Result A7670C_CMQTTRX_DownstreamHandler(sdk_ringbuffer_t
 
             find = sdk_ringbuffer_cut(&find_result, buffer, find_result.end, buffer_used, "\r\n", "\r\n");
             if(find!=0){
+                sdk_ringbuffer_reset(buffer);
+                A7670C_Notify();
                 res = kA7670C_RxHandler_Result_RESET;
                 goto __skip;
             }
@@ -90,6 +96,8 @@ static A7670C_RxHandler_Result A7670C_CMQTTRX_DownstreamHandler(sdk_ringbuffer_t
             /*payload*/
             find = sdk_ringbuffer_cut(&find_result, buffer, find_start, buffer_used, "+CMQTTRXPAYLOAD: ", "\r\n");
             if(find!=0){
+                sdk_ringbuffer_reset(buffer);
+                A7670C_Notify();
                 res = kA7670C_RxHandler_Result_RESET;
                 goto __skip;
             }
@@ -109,7 +117,8 @@ static A7670C_RxHandler_Result A7670C_CMQTTRX_DownstreamHandler(sdk_ringbuffer_t
         }
 
         os_sem_release(&CMQTTRX_DataHandle_Sem);
-
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     
@@ -117,6 +126,8 @@ static A7670C_RxHandler_Result A7670C_CMQTTRX_DownstreamHandler(sdk_ringbuffer_t
     if(find==0){
         session->state = kA7670C_MQTT_State_IDLE;
         os_sem_release(&CMQTTRX_DataHandle_Sem);
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 __skip:

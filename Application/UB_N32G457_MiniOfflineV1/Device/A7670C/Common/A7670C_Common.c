@@ -24,14 +24,6 @@ static char A7670C__Printf_Buffer[256];
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-__STATIC_FORCEINLINE void Delay_Us(uint32_t us){
-    while(us--){
-        __asm volatile("nop");
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-////
 A7670C_Device_T* A7670C_Init(A7670C_Pin_T* power_en, A7670C_Pin_T* power_key, A7670C_Pin_T* power_status, A7670C_Pin_T* power_reset, A7670C_IO_T* uart)
 {
 
@@ -45,6 +37,7 @@ A7670C_Device_T* A7670C_Init(A7670C_Pin_T* power_en, A7670C_Pin_T* power_key, A7
     ////////////////////////////////////////////////////////////////////////////////
     ////
     s_A7670C__RxHandler.rxHandler = 0;
+    s_A7670C__RxHandler.userdata = 0;
     os_sem_init(&rx_handler_lock,  "A7670C_RxHdLk",0, OS_QUEUE_FIFO);
     os_mutex_init(&A7670C__mutex);
 
@@ -109,6 +102,7 @@ A7670C_Result A7670C_RequestWithCmd(A7670C_RxHandler_T rxHandler, void* userdata
     A7670C__Instance.usart->setRxHandler(rxHandler, userdata);
     A7670C_Send(command, strlen(command));
     err = A7670C_TimedWait(ticks);
+    A7670C__Instance.usart->setRxHandler(0, 0);
     A7670C_UnLock();
 
     return (err==OS_ETIMEOUT)?kA7670C_Result_TIMEOUT:kA7670C_Result_OK;;
@@ -128,6 +122,7 @@ A7670C_Result A7670C_RequestWithArgs(A7670C_RxHandler_T rxHandler, void* userdat
     A7670C__Instance.usart->setRxHandler(rxHandler, userdata);
     A7670C_Send(A7670C__Printf_Buffer, size);
     err = A7670C_TimedWait(ticks);
+    A7670C__Instance.usart->setRxHandler(0, 0);
     A7670C_UnLock();
 
     return (err==OS_ETIMEOUT)?kA7670C_Result_TIMEOUT:kA7670C_Result_OK;
@@ -139,5 +134,6 @@ A7670C_Result A7670C_TimedWait(os_tick_t ticks)
     return (err==OS_ETIMEOUT)?kA7670C_Result_TIMEOUT:kA7670C_Result_OK;
 }
 
-
-
+void A7670C_Notify(void){
+    A7670C__Instance.usart->notify();
+}

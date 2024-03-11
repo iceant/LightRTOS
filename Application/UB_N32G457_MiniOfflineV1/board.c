@@ -85,7 +85,11 @@ static A7670C_Pin_T A7670C_ResetPin = {.on = A7670C_ResetPin_On, .off = A7670C_R
 static A7670C_Pin_T A7670C_PwrKeyPin = {.on = A7670C_PwrKeyPin_On, .off = A7670C_PwrKeyPin_Off, .read = A7670C_PwrKeyPin_Read };
 static A7670C_Pin_T A7670C_PwrEnPin = {.on = A7670C_PwrEnPin_On, .off = A7670C_PwrEnPin_Off, .read = A7670C_PwrEnPin_Read };
 static A7670C_Pin_T A7670C_StatusPin = {.on = A7670C_StatusPin_On, .off = A7670C_StatusPin_Off, .read = A7670C_StatusPin_Read };
-static A7670C_IO_T A7670C_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_UART5_SetRxHandler, .wait=BSP_UART5_TimeWait, .send=BSP_UART5_Send};
+static A7670C_IO_T A7670C_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_UART5_SetRxHandler,
+                                .wait=BSP_UART5_TimeWait,
+                                .send=BSP_UART5_Send,
+                                .notify = BSP_UART5_Notify};
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 

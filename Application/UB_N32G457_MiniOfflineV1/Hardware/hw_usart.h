@@ -35,4 +35,6 @@ void hw_usart_dma_send(USART_Module * USARTx, uint8_t* TxBuffer, size_t TxBuffer
 
 //void hw_usart_recv(USART_Module * USARTx, uint8_t * RxBuffer, size_t RxBufferSize);
 
+void hw_usart_dma_enable(void);
+
 #endif /*INCLUDED_HW_USART_H*/

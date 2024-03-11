@@ -1,4 +1,5 @@
 #include <CPIN.h>
+#include <stdio.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -7,6 +8,8 @@ static A7670C_RxHandler_Result CPIN_Test_Handler(sdk_ringbuffer_t *buffer, void*
     bool* result = (bool*)ud;
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1){
         *result = true;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
@@ -34,29 +37,34 @@ static A7670C_RxHandler_Result CPIN_Read_Handler(sdk_ringbuffer_t *buffer, void*
         int find = sdk_ringbuffer_cut(&find_result, buffer, 0, sdk_ringbuffer_used(buffer),"+CPIN: ", "\r\n");
         if(find==0){
             if(sdk_ringbuffer_strcmp(buffer, find_result.start, find_result.end, "READY")==0){
-                result->code=kA7670C_CPIN_Record_Code_READY;
+                result->record_code=kA7670C_CPIN_Record_Code_READY;
             }else if(sdk_ringbuffer_strcmp(buffer, find_result.start, find_result.end, "SIM PIN")==0){
-                result->code=kA7670C_CPIN_Record_Code_SIMPIN;
+                result->record_code=kA7670C_CPIN_Record_Code_SIMPIN;
             }else if(sdk_ringbuffer_strcmp(buffer, find_result.start, find_result.end, "SIM PUK")==0){
-                result->code=kA7670C_CPIN_Record_Code_SIMPUK;
+                result->record_code=kA7670C_CPIN_Record_Code_SIMPUK;
             }else if(sdk_ringbuffer_strcmp(buffer, find_result.start, find_result.end, "PH-SIM PIN")==0){
-                result->code=kA7670C_CPIN_Record_Code_PHSIMPIN;
+                result->record_code=kA7670C_CPIN_Record_Code_PHSIMPIN;
             }else if(sdk_ringbuffer_strcmp(buffer, find_result.start, find_result.end, "SIM PIN2")==0){
-                result->code=kA7670C_CPIN_Record_Code_SIMPIN2;
+                result->record_code=kA7670C_CPIN_Record_Code_SIMPIN2;
             }else if(sdk_ringbuffer_strcmp(buffer, find_result.start, find_result.end, "SIM PUK2")==0){
-                result->code=kA7670C_CPIN_Record_Code_SIMPUK2;
+                result->record_code=kA7670C_CPIN_Record_Code_SIMPUK2;
             }else if(sdk_ringbuffer_strcmp(buffer, find_result.start, find_result.end, "PH-NET PIN")==0){
-                result->code=kA7670C_CPIN_Record_Code_PHNETPIN;
+                result->record_code=kA7670C_CPIN_Record_Code_PHNETPIN;
             }
             sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }else{
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_RESET;
         }
     }
 
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1 /*接收结束*/){
         result->code = kA7670C_Response_Code_ERROR;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
@@ -65,8 +73,12 @@ static A7670C_RxHandler_Result CPIN_Read_Handler(sdk_ringbuffer_t *buffer, void*
         int find = sdk_ringbuffer_cut(&find_result,buffer, 0, sdk_ringbuffer_used(buffer), "+CME ERROR: ", "\r\n");
         if(find==0){
             result->err_code = sdk_ringbuffer_strtoul(buffer, find_result.start, 0, 0);
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }else{
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_RESET;
         }
     }
@@ -90,11 +102,15 @@ static A7670C_RxHandler_Result CPIN_Write_Handler(sdk_ringbuffer_t * buffer, voi
 
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1 /*接收结束: 成功*/){
         result->code=kA7670C_Response_Code_OK;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1 /*接收结束: 错误*/){
         result->code = kA7670C_Response_Code_ERROR;
+        sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
@@ -104,9 +120,12 @@ static A7670C_RxHandler_Result CPIN_Write_Handler(sdk_ringbuffer_t * buffer, voi
         int find = sdk_ringbuffer_cut(&find_result, buffer, 0, sdk_ringbuffer_used(buffer),"+CME ERROR: ", "\r\n");
         if(find==0){
             result->err_code = sdk_ringbuffer_strtoul(buffer, find_result.start, 0, 0);
-
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }else{
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_RESET;
         }
     }
