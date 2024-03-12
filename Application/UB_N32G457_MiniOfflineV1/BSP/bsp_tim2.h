@@ -21,6 +21,14 @@ void BSP_TIM2_Init(void);
 
 void BSP_TIM2_SetTimeUpHandler(BSP_TIM2_TimeUpHandler TimeUpHandler, void* userdata);
 
-uint32_t BSP_TIM2_GetTickCount(void);
+volatile uint32_t BSP_TIM2_GetTickCount(void);
+
+__STATIC_FORCEINLINE uint32_t BSP_TIM2_TickDiff(uint32_t start, uint32_t end){
+    if(end < start){
+        return end + (UINT32_MAX-start);
+    }else{
+        return end-start;
+    }
+}
 
 #endif /* INCLUDED_BSP_TIM2_H */
