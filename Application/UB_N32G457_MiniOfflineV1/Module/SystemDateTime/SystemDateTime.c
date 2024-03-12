@@ -55,6 +55,33 @@ __STATIC_FORCEINLINE void SDT__AddOneSecond(void){
                             }
                         }
                     }
+                }else{
+                    if(SDT__CurrentDateTime.month==kSystemDateTime_Month_JAN
+                        || SDT__CurrentDateTime.month==kSystemDateTime_Month_MAR
+                        || SDT__CurrentDateTime.month==kSystemDateTime_Month_MAY
+                        || SDT__CurrentDateTime.month==kSystemDateTime_Month_JUL
+                        || SDT__CurrentDateTime.month==kSystemDateTime_Month_AUG
+                        || SDT__CurrentDateTime.month==kSystemDateTime_Month_OCT
+                        || SDT__CurrentDateTime.month==kSystemDateTime_Month_DEC)
+                    {
+                        if(SDT__CurrentDateTime.date==32){
+                            SDT__CurrentDateTime.date = 1;
+                            SDT__CurrentDateTime.month+=1;
+                            if(SDT__CurrentDateTime.month==13){
+                                SDT__CurrentDateTime.year+=1;
+                                SDT__CurrentDateTime.month=kSystemDateTime_Month_JAN;
+                            }
+                        }
+                    }else{
+                        if(SDT__CurrentDateTime.date==31){
+                            SDT__CurrentDateTime.date = 1;
+                            SDT__CurrentDateTime.month+=1;
+                            if(SDT__CurrentDateTime.month==13){
+                                SDT__CurrentDateTime.year+=1;
+                                SDT__CurrentDateTime.month=kSystemDateTime_Month_JAN;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -93,7 +120,6 @@ static void SDT__Thread_Entry(void* p){
             SDT__AddOneSecond();
             os_mutex_unlock(&SDT__Mutex);
         }
-        printf("SDT Running...\n");
         os_thread_mdelay(SDT_UPDATE_PERIOD_MS);
     }
 }
