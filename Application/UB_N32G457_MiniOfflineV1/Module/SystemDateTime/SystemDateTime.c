@@ -91,7 +91,7 @@ __STATIC_FORCEINLINE void SDT__AddOneSecond(void){
 
 
 static void SystemDateTime__TIM2_TimeUpHandler(void* userdata){
-    SDT__CurrentDateTime.sequence++;
+    SDT__CurrentDateTime.millisecond++;
 }
 
 static void SDT__Thread_Entry(void* p){
@@ -120,13 +120,13 @@ static void SDT__Thread_Entry(void* p){
             }else{
                 SDT__CurrentDateTime.second = second;
             }
-            SDT__CurrentDateTime.sequence = 0;
+            SDT__CurrentDateTime.millisecond = 0;
             BSP_TIM2_SetTimeUpHandler(SystemDateTime__TIM2_TimeUpHandler, 0);
             os_mutex_unlock(&SDT__Mutex);
         }else{
             os_mutex_lock(&SDT__Mutex);
             SDT__AddOneSecond();
-            SDT__CurrentDateTime.sequence = 0;
+            SDT__CurrentDateTime.millisecond = 0;
             BSP_TIM2_SetTimeUpHandler(SystemDateTime__TIM2_TimeUpHandler, 0);
             os_mutex_unlock(&SDT__Mutex);
         }
@@ -144,7 +144,7 @@ void SystemDateTime_Init(void){
     SDT__CurrentDateTime.hour = 0;
     SDT__CurrentDateTime.minute = 0;
     SDT__CurrentDateTime.second = 0;
-    SDT__CurrentDateTime.sequence = 0;
+    SDT__CurrentDateTime.millisecond = 0;
     
     os_mutex_init(&SDT__Mutex);
     

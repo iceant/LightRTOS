@@ -38,7 +38,7 @@ typedef struct SystemDateTime_S{
     uint8_t hour;
     uint8_t minute;
     uint8_t second;
-    os_size_t sequence;
+    os_size_t millisecond;
 }SystemDateTime_T;
 ////////////////////////////////////////////////////////////////////////////////
 ////

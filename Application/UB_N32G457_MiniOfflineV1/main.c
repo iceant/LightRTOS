@@ -18,7 +18,19 @@ static os_thread_t Boot_Thread;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-
+static void BSP_TIM2__SecondHandler(void){
+    SystemDateTime_T dateTime;
+    SystemDateTime_Get(&dateTime);
+    printf("BSP_TIM2__SecondHandler: %04d-%02d-%02d %02d:%02d:%02d.%03d\n"
+            , dateTime.year
+            , dateTime.month
+            , dateTime.date
+            , dateTime.hour
+            , dateTime.minute
+            , dateTime.second
+            , dateTime.millisecond
+    );
+}
 
 static void Boot_Thread_Entry(void* p){
     
@@ -27,18 +39,19 @@ static void Boot_Thread_Entry(void* p){
     A7670C_Startup();
     NTP_Init();
     SystemDateTime_Init();
-
+    
     while(1){
         SystemDateTime_T dateTime;
         SystemDateTime_Get(&dateTime);
-        printf("%04d-%02d-%02d %02d:%02d:%02d.%03d\n"
+        printf("%04d-%02d-%02d %02d:%02d:%02d.%03d, Ticks:%ld\n"
                , dateTime.year
                , dateTime.month
                , dateTime.date
                , dateTime.hour
                , dateTime.minute
                , dateTime.second
-               , dateTime.sequence
+               , dateTime.millisecond
+               , BSP_TIM2_GetTickCount()
                );
         os_thread_mdelay(1000);
     }
