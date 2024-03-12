@@ -47,14 +47,18 @@ os_err_t NTP_Sync(void){
     A7670C_CCLK_DateTime CCLK_DateTime;
     
     while(1){
+        A7670C_CNTP_Exec(&CNTP_Exec_Response, 12000);
+        if(CNTP_Exec_Response.code!=kA7670C_Response_Code_OK){
+            printf("CNTP ERROR!!!\n");
+            return OS_ERROR;
+        }
         
-        do{
-            A7670C_CNTP_Exec(&CNTP_Exec_Response, 12000);
-        }while(CNTP_Exec_Response.code!=kA7670C_Response_Code_OK);
+        A7670C_CCLK_Read(&CCLK_Read_Response, 12000);
+        if(CCLK_Read_Response.code!=kA7670C_Response_Code_OK){
+            printf("CCLK ERROR!!!\n");
+            return OS_ERROR;
+        }
         
-        do {
-            A7670C_CCLK_Read(&CCLK_Read_Response, 12000);
-        }while(CCLK_Read_Response.code!=kA7670C_Response_Code_OK);
         
         A7670C_CCLK_ToDateTime(&CCLK_DateTime, &CCLK_Read_Response);
         
@@ -64,7 +68,6 @@ os_err_t NTP_Sync(void){
                 ){
             return OS_ERROR;
         }
-        
         DS1307_SetYear(CCLK_DateTime.year);
         DS1307_SetMonth(CCLK_DateTime.month);
         DS1307_SetDate(CCLK_DateTime.day);

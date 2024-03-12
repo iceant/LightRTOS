@@ -17,7 +17,7 @@
 
 static BSP_TIM2_TimeUpHandler BSP_TIM2__TimeUpHandler=0;
 static void* BSP_TIM2__TimeUpHandler_Parameter = 0;
-static volatile os_size_t BSP_TIM2__TickCount=0;
+static uint32_t BSP_TIM2__TickCount=0;
 
 __ALIGNED(OS_ALIGN_SIZE)
 static uint8_t BSP_TIM2__SecondThread_Stack[BSP_TIM2_SECOND_THREAD_STACK_SIZE];
@@ -112,7 +112,7 @@ void BSP_TIM2_SetTimeUpHandler(BSP_TIM2_TimeUpHandler TimeUpHandler, void* userd
     TIM_ConfigInt(TIM2, TIM_INT_UPDATE, ENABLE);
 }
 
-volatile uint32_t BSP_TIM2_GetTickCount(void){
+uint32_t BSP_TIM2_GetTickCount(void){
     return BSP_TIM2__TickCount;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,11 +122,16 @@ void TIM2_IRQHandler(void)
     if (TIM_GetIntStatus(TIM2, TIM_INT_UPDATE) != RESET)
     {
         BSP_TIM2__TickCount++;
-        
-        if(BSP_TIM2__ThreadReadyFlag==OS_TRUE){
-            os_sem_release(&BSP_TIM2__Sem);
-        }
         TIM_ClrIntPendingBit(TIM2, TIM_INT_UPDATE);
+        
+//        if(BSP_TIM2__ThreadReadyFlag==OS_TRUE){
+//            os_sem_release(&BSP_TIM2__Sem);
+//        }
+        if(BSP_TIM2__TimeUpHandler){
+            BSP_TIM2__TimeUpHandler(BSP_TIM2__TimeUpHandler_Parameter);
+        }
+        
+        
     }
 }
 
