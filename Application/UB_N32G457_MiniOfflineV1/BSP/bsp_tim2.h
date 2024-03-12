@@ -1,0 +1,23 @@
+#ifndef INCLUDED_BSP_TIM2_H
+#define INCLUDED_BSP_TIM2_H
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+#ifndef INCLUDED_N32G45X_H
+#define INCLUDED_N32G45X_H
+#include <n32g45x.h>
+#endif /*INCLUDED_N32G45X_H*/
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+typedef void (*BSP_TIM2_TimeUpHandler)(void* userdata);
+////////////////////////////////////////////////////////////////////////////////
+////
+
+void BSP_TIM2_Init(void);
+
+void BSP_TIM2_SetTimeUpHandler(BSP_TIM2_TimeUpHandler TimeUpHandler, void* userdata);
+
+#endif /* INCLUDED_BSP_TIM2_H */

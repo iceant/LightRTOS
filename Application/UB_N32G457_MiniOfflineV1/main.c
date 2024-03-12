@@ -31,7 +31,7 @@ static void Boot_Thread_Entry(void* p){
     while(1){
         SystemDateTime_T dateTime;
         SystemDateTime_Get(&dateTime);
-        printf("%04d-%02d-%02d %02d:%02d:%02d.%ld\n"
+        printf("%04d-%02d-%02d %02d:%02d:%02d.%03d\n"
                , dateTime.year
                , dateTime.month
                , dateTime.date

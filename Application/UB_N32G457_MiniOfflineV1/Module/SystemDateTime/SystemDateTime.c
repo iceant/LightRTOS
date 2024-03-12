@@ -2,6 +2,7 @@
 #include <DS1307.h>
 #include <os_mutex.h>
 #include <stdio.h>
+#include <bsp_tim2.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -88,6 +89,11 @@ __STATIC_FORCEINLINE void SDT__AddOneSecond(void){
     }
 }
 
+
+static void SystemDateTime__TIM2_TimeUpHandler(void* userdata){
+    SDT__CurrentDateTime.sequence++;
+}
+
 static void SDT__Thread_Entry(void* p){
     while(1){
         
@@ -114,15 +120,20 @@ static void SDT__Thread_Entry(void* p){
             }else{
                 SDT__CurrentDateTime.second = second;
             }
+            SDT__CurrentDateTime.sequence = 0;
+            BSP_TIM2_SetTimeUpHandler(SystemDateTime__TIM2_TimeUpHandler, 0);
             os_mutex_unlock(&SDT__Mutex);
         }else{
             os_mutex_lock(&SDT__Mutex);
             SDT__AddOneSecond();
+            SDT__CurrentDateTime.sequence = 0;
+            BSP_TIM2_SetTimeUpHandler(SystemDateTime__TIM2_TimeUpHandler, 0);
             os_mutex_unlock(&SDT__Mutex);
         }
         os_thread_mdelay(SDT_UPDATE_PERIOD_MS);
     }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -133,7 +144,10 @@ void SystemDateTime_Init(void){
     SDT__CurrentDateTime.hour = 0;
     SDT__CurrentDateTime.minute = 0;
     SDT__CurrentDateTime.second = 0;
+    SDT__CurrentDateTime.sequence = 0;
+    
     os_mutex_init(&SDT__Mutex);
+    
     os_thread_init(&SDT__Thread, "SystemDateTime"
                    , SDT__Thread_Entry, 0
                    , SDT__Thread_Stack, sizeof(SDT__Thread_Stack)

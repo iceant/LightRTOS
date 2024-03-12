@@ -122,6 +122,7 @@ void board_init(void)
     sFLASH_Init();
     BSP_I2C1_Init();
     BSP_UART5_Init();
+    BSP_TIM2_Init();
 
     /* Device Configuration */
     DS1307_Init(&io_I2C1);
