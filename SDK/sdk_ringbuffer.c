@@ -386,7 +386,7 @@ os_size_t sdk_ringbuffer_memcpy(uint8_t * dst, sdk_ringbuffer_t* buffer, int off
 
 int sdk_ringbuffer_strcmp(sdk_ringbuffer_t* buffer, int offset, int end,  const char* str){
     int status = 0;
-    uint8_t c;
+    uint8_t c=0;
     int i;
     char* p =(char*)str;
     for(i = offset; i< end; i++){
@@ -400,7 +400,7 @@ int sdk_ringbuffer_strcmp(sdk_ringbuffer_t* buffer, int offset, int end,  const 
 }
 
 int sdk_ringbuffer_pos(sdk_ringbuffer_t *buffer, int pos){
-    int read_idx;
+    int read_idx = 0;
 
     if (pos < 0) {
         read_idx = (read_idx + RB_USED(buffer) + pos) % buffer->buffer_size;
