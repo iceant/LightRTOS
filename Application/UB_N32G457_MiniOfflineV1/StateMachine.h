@@ -23,7 +23,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-typedef void (*StateMachine_Transition_Function)(void* parameter);
+typedef struct StateMachine_S StateMachine_T;
+typedef void (*StateMachine_Transition_Function)(StateMachine_T* StateMachine, void* parameter);
 
 typedef struct StateMachine_TransitionFunctionClosure_S{
     StateMachine_Transition_Function function;
@@ -34,18 +35,18 @@ typedef struct StateMachine_Transition_S{
     int target_state;
     StateMachine_TransitionFunctionClosure_T enter;
     StateMachine_TransitionFunctionClosure_T inside;
-    StateMachine_TransitionFunctionClosure_T exit;
 }StateMachine_Transition_T;
 
 typedef struct StateMachine_State_S{
     int state;
+    StateMachine_TransitionFunctionClosure_T exit;
     sdk_array_t transitions;
 }StateMachine_State_T;
 
-typedef struct StateMachine_S{
+struct StateMachine_S{
     StateMachine_State_T* current_state;
     sdk_array_t states;
-}StateMachine_T;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -61,5 +62,7 @@ int StateMachine_StateInit(StateMachine_State_T* State, int StateCode);
 int StateMachine_AddState(StateMachine_T * StateMachine, StateMachine_State_T* State);
 
 int StateMachine_AddStateTransition(StateMachine_State_T* State, StateMachine_Transition_T* transition);
+
+int StateMachine_FindTransition(StateMachine_T* StateMachine, int ToStateCode, StateMachine_Transition_T** transition);
 
 #endif /*INCLUDED_STATEMACHINE_H*/

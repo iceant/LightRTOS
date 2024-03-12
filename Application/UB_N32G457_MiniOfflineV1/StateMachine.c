@@ -7,6 +7,28 @@ int StateMachine_Init(StateMachine_T * StateMachine) {
 }
 
 int StateMachine_SetState(StateMachine_T * StateMachine, StateMachine_State_T* State){
+    StateMachine_Transition_T* target_transition = 0;
+
+    if(StateMachine->current_state){
+
+        if(StateMachine->current_state->exit.function){
+            StateMachine->current_state->exit.function(StateMachine, StateMachine->current_state->exit.parameter);
+        }
+
+        if(StateMachine_FindTransition(StateMachine, State->state, &target_transition)==OS_EOK){
+            if(target_transition->enter.function){
+                target_transition->enter.function(StateMachine, target_transition->enter.parameter);
+            }
+        }
+    }
+
+    StateMachine->current_state = State;
+
+    if(target_transition){
+        if(target_transition->inside.function){
+            target_transition->inside.function(StateMachine, target_transition->inside.parameter);
+        }
+    }
 
     return OS_EOK;
 }
@@ -39,5 +61,21 @@ int StateMachine_StateInit(StateMachine_State_T* State, int StateCode)
 int StateMachine_AddStateTransition(StateMachine_State_T* State, StateMachine_Transition_T* transition)
 {
     return sdk_array_push(&State->transitions, transition);
+}
+
+int StateMachine_FindTransition(StateMachine_T* StateMachine, int ToStateCode, StateMachine_Transition_T** transition){
+    os_size_t i;
+    StateMachine_Transition_T* transition_p;
+
+    if(!StateMachine->current_state) return OS_ERROR;
+
+    for(i=0; i<StateMachine->current_state->transitions.size; i++){
+        sdk_array_get(&StateMachine->current_state->transitions, i, &transition_p);
+        if(transition_p->target_state==ToStateCode){
+            *transition = transition_p;
+            return OS_EOK;
+        }
+    }
+    return OS_ERROR;
 }
 
