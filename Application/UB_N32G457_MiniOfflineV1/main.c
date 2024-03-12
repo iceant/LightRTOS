@@ -3,6 +3,9 @@
 #include <os_kernel.h>
 #include <stdio.h>
 
+#include <Console.h>
+#include <NTP.h>
+#include <SystemDateTime.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define THREAD1_STACK_SIZE 1024
@@ -15,91 +18,31 @@ static os_thread_t Boot_Thread;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-static void ntp_sync(void){
-    A7670C_CNTP_Exec_Response CNTP_Exec_Response;
-    A7670C_CCLK_Read_Response CCLK_Read_Response;
-    A7670C_CCLK_DateTime CCLK_DateTime;
 
-    while(1){
-
-        do{
-            A7670C_CNTP_Exec(&CNTP_Exec_Response, 12000);
-        }while(CNTP_Exec_Response.code!=kA7670C_Response_Code_OK);
-
-        do {
-            A7670C_CCLK_Read(&CCLK_Read_Response, 12000);
-        }while(CCLK_Read_Response.code!=kA7670C_Response_Code_OK);
-
-        A7670C_CCLK_ToDateTime(&CCLK_DateTime, &CCLK_Read_Response);
-
-        if(CCLK_DateTime.year==2070
-           && CCLK_DateTime.month==1
-           && CCLK_DateTime.day==1
-                ){
-            A7670C_NopDelay(0x7FFFFF);
-            continue;
-        }
-
-        DS1307_SetYear(CCLK_DateTime.year);
-        DS1307_SetMonth(CCLK_DateTime.month);
-        DS1307_SetDate(CCLK_DateTime.day);
-        DS1307_SetHour(CCLK_DateTime.hour);
-        DS1307_SetMinute(CCLK_DateTime.min);
-        DS1307_SetSecond(CCLK_DateTime.sec+2);
-
-        printf("Set DateTime: %04d-%02d-%02d %02d:%02d:%02d\n"
-                , CCLK_DateTime.year
-                , CCLK_DateTime.month
-                , CCLK_DateTime.day
-                , CCLK_DateTime.hour
-                , CCLK_DateTime.min
-                , CCLK_DateTime.sec+2
-        );
-        break;
-    }
-}
 
 static void Boot_Thread_Entry(void* p){
-    os_size_t timeout_ms = (os_size_t)p;
-    os_size_t nCount = 0;
-
+    
+    Console_Init();
+    
     A7670C_Startup();
-
-
-    A7670C_CNTP_Write_Response CNTP_Write_Response;
-    do {
-        A7670C_CNTP_Write(&CNTP_Write_Response, "ntp.aliyun.com", 32, 12000);
-    }while(CNTP_Write_Response.code!=kA7670C_Response_Code_OK);
-
-    ntp_sync();
-
+    NTP_Init();
+    SystemDateTime_Init();
 
     while(1){
-
+        SystemDateTime_T dateTime;
+        SystemDateTime_Get(&dateTime);
+        printf("%04d-%02d-%02d %02d:%02d:%02d.%ld\n"
+               , dateTime.year
+               , dateTime.month
+               , dateTime.date
+               , dateTime.hour
+               , dateTime.minute
+               , dateTime.second
+               , dateTime.sequence
+               );
+        os_thread_mdelay(1000);
     }
 }
-
-
-////////////////////////////////////////////////////////////////////////////////
-////
-static int USART1_RxHandler(sdk_ringbuffer_t * buffer, void* userdata){
-    if(sdk_ringbuffer_find_str(buffer, 0, "\r\n")!=-1){
-        printf("USART1:(%ld) %s\n", sdk_ringbuffer_used(buffer),  buffer->buffer);
-        if(sdk_ringbuffer_find_str(buffer,0, "reboot")!=-1){
-            __svc(1); /* Reboot */
-        }
-        if(sdk_ringbuffer_find_str(buffer, 0, "led off")!=-1){
-            BSP_Power3V3_Off();
-        }
-        if(sdk_ringbuffer_find_str(buffer, 0, "led on")!=-1){
-            BSP_Power3V3_On();
-        }
-        sdk_ringbuffer_reset(buffer);
-        return BSP_USART1_RX_STATE_DONE;
-    }
-    return BSP_USART1_RX_STATE_CONTINUE;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -107,26 +50,11 @@ static int USART1_RxHandler(sdk_ringbuffer_t * buffer, void* userdata){
 int main(void){
 
     board_init();
-
-    BSP_USART1_SetRxHandler(USART1_RxHandler, 0);
-
+    
     os_kernel_init();
 
-    /*
-     1. 如果 20,5,10 的优先级设置，永远按照 5, 10, 20 的优先级顺序进行调度
-     2. 如果 20,10,10 的优先级设置, Thread2 和 Thread3 会交替占用第一优先级，然后才是 Thread1 运行, Thread1 永远在最后
-     3. 如果 10,10,10 的优先级设置, 顺序将是 Thread1, Thread2, Thread3 或者 Thread3, Thread2, Thread1
-     4. 如果优先级一样，但是 tick 不一样时，tick多的获取的运行时间就多
-     5. 如果线程使用 yield让出 cpu，当前线程会被加入就绪表，在下次调度时会安排执行，如果优先级是 10,20,5 那么Thread2将永远无法获得运行机会，如果是 10,10,5 那么 将编程 Thread3, Thread1, Thread3, Thread2 这样的循环运行
-     * */
-    os_thread_init(&thread1, "BootThd", thread1_entry, 1000, thread1_stack, sizeof(thread1_stack), 10, 10);
-    os_thread_startup(&thread1);
-
-//    os_thread_init(&thread2, "Thread2", thread1_entry, 1500, thread2_stack, sizeof(thread2_stack), 10, 10);
-//    os_thread_startup(&thread2);
-//
-//    os_thread_init(&thread3, "Thread3", thread1_entry, 2000, thread3_stack, sizeof(thread3_stack), 5, 20);
-//    os_thread_startup(&thread3);
+    os_thread_init(&Boot_Thread, "BootThd", Boot_Thread_Entry, 0, Boot_Thread_stack, sizeof(Boot_Thread_stack), 10, 10);
+    os_thread_startup(&Boot_Thread);
 
     os_kernel_startup();
     

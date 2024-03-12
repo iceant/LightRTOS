@@ -111,6 +111,22 @@ foreach (item IN LISTS DEVICE_A7670C_SOURCES)
 endforeach ()
 
 ########################################################################################################################
+file(GLOB MODULE_CONSOLE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console/*.c)
+foreach (item IN LISTS CONSOLE_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
+file(GLOB MODULE_NTP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/NTP/*.c)
+foreach (item IN LISTS MODULE_NTP_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
+file(GLOB MODULE_SYSTEM_DATETIME_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/SystemDateTime/*.c)
+foreach (item IN LISTS MODULE_SYSTEM_DATETIME_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
+########################################################################################################################
 add_executable(${PROJECT_NAME} "")
 target_sources(${PROJECT_NAME}
         PUBLIC ${SOURCES}
@@ -129,6 +145,9 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${DEVICE_A7670C_SIM_CARD_SOURCES}
         PUBLIC ${DEVICE_A7670C_STATUS_CONTROL_SOURCES}
         PUBLIC ${DEVICE_A7670C_V25TER_SOURCES}
+        PUBLIC ${MODULE_CONSOLE_SOURCES}
+        PUBLIC ${MODULE_NTP_SOURCES}
+        PUBLIC ${MODULE_SYSTEM_DATETIME_SOURCES}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/BSP)
@@ -146,6 +165,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/De
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/SIMCard)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/StatusControl)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/V25TER)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/NTP)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/SystemDateTime)
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC N32G45x
