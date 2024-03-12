@@ -51,6 +51,11 @@ foreach (item IN LISTS ESP01S_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
+file(GLOB OLED_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/OLED/*.c)
+foreach (item IN LISTS OLED_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
 
 ########################################################################################################################
 
@@ -61,12 +66,14 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${BSP_SOURCES}
         PUBLIC ${DS1302_SOURCES}
         PUBLIC ${ESP01S_SOURCES}
+        PUBLIC ${OLED_SOURCES}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Hardware)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/BSP)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/DS1302)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/ESP01S)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/OLED)
 target_link_libraries(${PROJECT_NAME}
         PUBLIC n32l40x
         PUBLIC LightRTOS-Kernel
