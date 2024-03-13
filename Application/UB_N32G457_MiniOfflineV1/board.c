@@ -108,8 +108,6 @@ void board_init(void)
     NVIC_SetPriority(PendSV_IRQn, 0xFF);
     SysTick_Config(SystemCoreClock/CPU_TICKS_PER_SECOND); /* 1ms = tick */
 
-
-
     /* BSP Configurations */
     BSP_Power3V3_Init();
     BSP_Power3V3_On();
@@ -158,7 +156,4 @@ void board_init(void)
     IM1253E_Init(&IM1253E_IO);
 #endif
 
-#if defined(CURRENT_SENSOR_ENABLE)
-    CurrentSensor_Init();
-#endif
 }

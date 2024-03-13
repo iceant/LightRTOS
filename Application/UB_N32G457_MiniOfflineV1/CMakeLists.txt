@@ -13,7 +13,7 @@ option(USE_TLSF "Use TLSF Memory Allocator" ON)
 
 add_definitions(
         -DCPU_TICKS_PER_SECOND=100
-        -DTLSF_MEMORY_POOL_SIZE=10240
+        -DTLSF_MEMORY_POOL_SIZE=20480
         -DCPU_32BIT
         -DUSE_TLSF
         -DSYSCLK_FREQ=100000000
@@ -131,8 +131,8 @@ foreach (item IN LISTS MODULE_SYSTEM_DATETIME_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB MODULE_CURRENT_SENSOR_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/CurrentSensor/*.c)
-foreach (item IN LISTS MODULE_CURRENT_SENSOR_SOURCES)
+file(GLOB MODULE_ENERGY_METER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/EnergyMeter/*.c)
+foreach (item IN LISTS MODULE_ENERGY_METER_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
@@ -160,7 +160,7 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${MODULE_CONSOLE_SOURCES}
         PUBLIC ${MODULE_NTP_SOURCES}
         PUBLIC ${MODULE_SYSTEM_DATETIME_SOURCES}
-        PUBLIC ${MODULE_CURRENT_SENSOR_SOURCES}
+        PUBLIC ${MODULE_ENERGY_METER_SOURCES}
 
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -184,7 +184,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/De
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/NTP)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/SystemDateTime)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/CurrentSensor)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/EnergyMeter)
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC N32G45x

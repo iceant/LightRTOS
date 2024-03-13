@@ -64,7 +64,7 @@
 #endif /*INCLUDED_IM1253E_H*/
 
 #ifndef INCLUDED_CURRENTSENSOR_H
-#include <CurrentSensor.h>
+#include <EnergyMeter.h>
 #endif /*INCLUDED_CURRENTSENSOR_H*/
 
 #ifndef INCLUDED_CONFIG_H

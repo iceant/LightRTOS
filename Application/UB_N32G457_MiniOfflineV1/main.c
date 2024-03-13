@@ -36,6 +36,9 @@ static void Boot_Thread_Entry(void* p){
     printf("SystemDateTime Startup...\n");
     SystemDateTime_Init();
     
+    /* 用到内存，需要先初始化内存模块 */
+    EnergyMeter_Init();
+    
     while(1){
         SystemDateTime_T dateTime;
         SystemDateTime_Get(&dateTime);
@@ -50,13 +53,13 @@ static void Boot_Thread_Entry(void* p){
                , BSP_TIM2_GetTickCount()
                );
 
-        uint32_t Voltage = 0;
-        IM1253E_GetVoltage(&Voltage, 120);
-        printf("IM1253E_Voltage: %ld\n", Voltage);
-
-        IM1253E_Data_T IM1253E_Data;
-        IM1253E_GetData(&IM1253E_Data, 140);
-        printf("IM1253E_DATA Voltage: %ld\n", Voltage);
+//        uint32_t Voltage = 0;
+//        IM1253E_GetVoltage(&Voltage, 120);
+//        printf("IM1253E_Voltage: %ld\n", Voltage);
+//
+//        IM1253E_Data_T IM1253E_Data;
+//        IM1253E_GetData(&IM1253E_Data, 140);
+//        printf("IM1253E_DATA Voltage: %ld\n", Voltage);
 
         os_thread_mdelay(1000);
     }
@@ -66,12 +69,16 @@ static void Boot_Thread_Entry(void* p){
 ////
 
 int main(void){
+    
+    
     board_init();
-
+    
     printf("CPU_UID: %s\n", BSP_CPUID_GetUIDStr());
     printf("CPU_UCID: %s\n", BSP_CPUID_GetUCIDStr());
-
+    
+    
     os_kernel_init();
+    
 
     os_thread_init(&Boot_Thread, "BootThd", Boot_Thread_Entry, 0, Boot_Thread_stack, sizeof(Boot_Thread_stack), 10, 10);
     os_thread_startup(&Boot_Thread);

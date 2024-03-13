@@ -32,6 +32,7 @@ static int cmp(sdk_ap_t x, sdk_ap_t y);
 static sdk_ap_t mk(int size) {
     sdk_ap_t z = OS_CALLOC(1, sizeof (*z) + size);
     assert(size > 0);
+    assert(z);
     z->sign = 1;
     z->size = size;
     z->ndigits = 1;
@@ -107,6 +108,10 @@ void sdk_ap_free(sdk_ap_t *z) {
     OS_FREE(*z);
 }
 
+sdk_ap_t sdk_ap_set(sdk_ap_t z, long int n){
+    return set(z, n);
+}
+
 sdk_ap_t sdk_ap_neg(sdk_ap_t x) {
     sdk_ap_t z;
     assert(x);
@@ -116,6 +121,18 @@ sdk_ap_t sdk_ap_neg(sdk_ap_t x) {
     z->sign = iszero(z) ? 1 : -x->sign;
     return z;
 }
+
+sdk_ap_t sdk_ap_mul_to(sdk_ap_t z, sdk_ap_t x, sdk_ap_t y){
+    assert(x);
+    assert(y);
+    sdk_xp_mul(z->digits, x->ndigits, x->digits, y->ndigits,
+               y->digits);
+    normalize(z, z->size);
+    z->sign = iszero(z)
+              || ((x->sign^y->sign) == 0) ? 1 : -1;
+    return z;
+}
+
 sdk_ap_t sdk_ap_mul(sdk_ap_t x, sdk_ap_t y) {
     sdk_ap_t z;
     assert(x);
@@ -287,6 +304,22 @@ sdk_ap_t sdk_ap_muli(sdk_ap_t x, long int y) {
     t.digits = d;
     return sdk_ap_mul(x, set(&t, y));
 }
+
+sdk_ap_t sdk_ap_mul2i(sdk_ap_t z, long int x, long int y) {
+    unsigned char dx[sizeof (unsigned long)];
+    unsigned char dy[sizeof (unsigned long)];
+    
+    struct sdk_ap_s tx;
+    tx.size = sizeof dx;
+    tx.digits = dx;
+    
+    struct sdk_ap_s ty;
+    ty.size = sizeof dy;
+    ty.digits = dy;
+    
+    return sdk_ap_mul_to(z, set(&tx, x), set(&ty, y));
+}
+
 sdk_ap_t sdk_ap_divi(sdk_ap_t x, long int y) {
     unsigned char d[sizeof (unsigned long)];
     struct sdk_ap_s t;

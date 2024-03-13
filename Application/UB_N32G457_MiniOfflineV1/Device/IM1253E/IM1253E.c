@@ -7,6 +7,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
+
+//#define IM1253E_DEBUG_ENABLE
+
+////////////////////////////////////////////////////////////////////////////////
+////
 static IM1253E_IO_T * IM1253E__IO = 0;
 
 static os_mutex_t IM1253E__Mutex;
@@ -53,7 +58,9 @@ static void IM1253E__GetVoltageHandler(sdk_ringbuffer_t * buffer, void* userdata
     }
 
     uint8_t DL = sdk_ringbuffer_peek(buffer, start_idx+2);
+    #if defined(IM1253E_DEBUG_ENABLE)
     printf("start_idx: %d\n", start_idx);
+    #endif
     if((start_idx + DL + 5) > used){
         /*数据没有接收完成，继续等待*/
         return;
@@ -81,10 +88,14 @@ os_err_t IM1253E_GetVoltage(uint32_t* Voltage, os_time_t timeout_ms)
     os_mutex_lock(&IM1253E__Mutex);
     IM1253E__IO->setRxHandler((void*)IM1253E__GetVoltageHandler, Voltage);
     IM1253E__IO->send(IM1253E__ReadCVolMD, sizeof(IM1253E__ReadCVolMD));
+    #if defined(IM1253E_DEBUG_ENABLE)
     uint32_t start_tick = BSP_TIM2_GetTickCount();
     err = IM1253E__IO->wait(os_tick_from_millisecond(timeout_ms));
     volatile uint32_t end_tick = BSP_TIM2_GetTickCount();
     printf("IM1253E_GetVoltage: %ld, Used MS:%d, Ticks:%d\n", *Voltage, end_tick-start_tick, os_tick_from_millisecond(end_tick-start_tick));
+    #else
+    err = IM1253E__IO->wait(os_tick_from_millisecond(timeout_ms));
+    #endif
     IM1253E__IO->setRxHandler(0, 0);
     os_mutex_unlock(&IM1253E__Mutex);
     return err;
@@ -156,12 +167,18 @@ os_err_t IM1253E_GetData(IM1253E_Data_T * Data, os_time_t timeout_ms)
     os_mutex_lock(&IM1253E__Mutex);
     IM1253E__IO->setRxHandler((void*)IM1253E_GetDataHandler, Data);
     IM1253E__IO->send(IM1253E__ReadAllCMD, sizeof(IM1253E__ReadAllCMD));
-
+    
+    #if defined(IM1253E_DEBUG_ENABLE)
     uint32_t start_tick = BSP_TIM2_GetTickCount();
+    #endif
+    
     err = IM1253E__IO->wait(os_tick_from_millisecond(timeout_ms));
+    
+    #if defined(IM1253E_DEBUG_ENABLE)
     volatile uint32_t end_tick = BSP_TIM2_GetTickCount();
     printf("IM1253E_GetData: %ld, Used MS:%d, Ticks:%d\n", Data->Voltage, end_tick-start_tick, os_tick_from_millisecond(end_tick-start_tick));
-
+    #endif
+    
     IM1253E__IO->setRxHandler(0, 0);
     os_mutex_unlock(&IM1253E__Mutex);
     return err;

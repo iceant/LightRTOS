@@ -14,6 +14,7 @@ typedef struct BSP_UART7_RxHandler_Record{
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
+//#define BSP_UART7_DEBUG_ENABLE
 #define BSP_UARTx           UART7
 #define BSP_UARTx_REMAP     GPIO_RMP1_UART7
 #define BSP_UARTx_BAUDRATE  4800
@@ -28,19 +29,28 @@ static os_thread_t UART7_RxThread;
 static uint8_t UART7_RxBlock[UART7_RX_BLOCK_SIZE];
 static sdk_ringbuffer_t UART7_RxBuffer;
 static BSP_UART7_RxHandler_Record bsp_uart7__rx_handler={.rx_handler  = 0, .userdata = 0};
-static os_size_t UART7_RxBufferUsed = 0;
+
 static os_bool_t UART7_RxThreadFlag = OS_FALSE;
 static os_bool_t UART7_TimeWaitFlag = OS_FALSE;
+
+#if defined(BSP_UART7_DEBUG_ENABLE)
+static os_size_t UART7_RxBufferUsed = 0;
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+////
 
 static void UART7_RxThreadEntry(void* p){
     UART7_RxThreadFlag = OS_TRUE;
     while(1){
         os_sem_take(&UART7_RxSem, OS_WAIT_INFINITY);
+#if defined(BSP_UART7_DEBUG_ENABLE)
         os_size_t used = sdk_ringbuffer_used(&UART7_RxBuffer);
         if(used>0 && used!=UART7_RxBufferUsed){
             UART7_RxBufferUsed = used;
             sdk_hex_dump("UART7_RxBuffer", UART7_RxBuffer.buffer, used);
         }
+#endif
         if(bsp_uart7__rx_handler.rx_handler){
             bsp_uart7__rx_handler.rx_handler(&UART7_RxBuffer, bsp_uart7__rx_handler.userdata);
         }else{
@@ -91,17 +101,21 @@ void BSP_UART7_Init(void){
 
 void BSP_UART7_SetRxHandler(BSP_UART7_RxHandler rxHandler, void* userdata)
 {
+    #if defined(BSP_UART7_DEBUG_ENABLE)
     printf("BSP_UART7_SetRxHandler: %x, %x\n", rxHandler, userdata);
+    #endif
     bsp_uart7__rx_handler.rx_handler = rxHandler;
     bsp_uart7__rx_handler.userdata = userdata;
 }
 
 os_err_t BSP_UART7_Send(uint8_t * data, os_size_t size)
 {
+
+#if defined(BSP_UART7_DEBUG_ENABLE)
     UART7_RxBufferUsed = 0;
-
     sdk_hex_dump("UART7_Send", data, size);
-
+#endif
+    
     sdk_ringbuffer_reset(&UART7_RxBuffer);
 //    hw_usart_dma_send(BSP_UARTx, data, size);
     hw_usart_send(BSP_UARTx, data, size);
@@ -114,14 +128,18 @@ os_err_t BSP_UART7_TimeWait(os_tick_t ticks)
     UART7_TimeWaitFlag = OS_TRUE;
     os_err_t err = os_sem_take(&bsp_uart7__rx_handler.lock, ticks);
     UART7_TimeWaitFlag = OS_FALSE;
+    #if defined(BSP_UART7_DEBUG_ENABLE)
     UART7_RxBufferUsed = 0;
     printf("BSP_UART7_TimeWait: %d ticks, handler:%x return: %d\n", ticks, bsp_uart7__rx_handler.rx_handler, err);
+    #endif
     return err;
 }
 
 void BSP_UART7_Notify(void){
     if(UART7_TimeWaitFlag){
+        #if defined(BSP_UART7_DEBUG_ENABLE)
         printf("BSP_UART7_Notify\n");
+        #endif
         os_sem_release(&bsp_uart7__rx_handler.lock);
     }
 }
