@@ -22,13 +22,17 @@ static void Boot_Thread_Entry(void* p){
     printf("Boot Thread Entry Enter...\n");
 
     Console_Init();
-
+    
+#if defined(NETWORK_ENABLE)
     printf("A7670C Startup...\n");
-    A7670C_Startup();
-
+    A7670C_Result A7670C_StartupResult = A7670C_Startup();
+    if(A7670C_StartupResult!=kA7670C_Result_OK){
+        __svc(1);
+    }
     printf("NTP Startup...\n");
     NTP_Init();
-
+#endif
+    
     printf("SystemDateTime Startup...\n");
     SystemDateTime_Init();
     

@@ -1,0 +1,6 @@
+#ifndef INCLUDED_CURRENTSENSOR_H
+#define INCLUDED_CURRENTSENSOR_H
+
+void CurrentSensor_Init(void);
+
+#endif /* INCLUDED_CURRENTSENSOR_H */

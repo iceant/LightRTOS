@@ -50,11 +50,12 @@ A7670C_Result A7670C_Startup(void){
 __A7670C__Boot:
     A7670C_PowerOff();
     A7670C_PowerOn();
-    A7670C_NopDelay(0x7FFFFF);
+    A7670C_NopDelay(0x3FFFFF);
     while(!A7670C_IsPowerOn()){
+        printf("4G Power On...\n");
         A7670C_PowerOff();
         A7670C_PowerOn();
-        A7670C_NopDelay(10);
+        A7670C_NopDelay(0x3FFFFFF);
     }
 
     while(1){

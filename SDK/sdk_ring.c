@@ -58,13 +58,13 @@ os_err_t sdk_ring_get(sdk_ring_t * ring, void* object){
 }
 
 os_size_t sdk_ring_used(sdk_ring_t * ring){
-    return (ring->write_idx > ring->read_idx) ?
+    return (ring->write_idx >= ring->read_idx) ?
            (ring->write_idx - ring->read_idx) :
            (ring->write_idx + ring->capacity - ring->read_idx);
 }
 
 os_err_t sdk_ring_read(sdk_ring_t * ring, os_size_t offset, void* object){
-    os_size_t used = (ring->write_idx > ring->read_idx) ?
+    os_size_t used = (ring->write_idx >= ring->read_idx) ?
                      (ring->write_idx - ring->read_idx) :
                      (ring->write_idx + ring->capacity - ring->read_idx);
 
@@ -94,7 +94,7 @@ os_err_t sdk_ring_read(sdk_ring_t * ring, os_size_t offset, void* object){
 
 void* sdk_ring_peek(sdk_ring_t * ring, os_size_t offset /*0<= offset <used*/){
 
-    os_size_t used = (ring->write_idx > ring->read_idx) ?
+    os_size_t used = (ring->write_idx >= ring->read_idx) ?
                      (ring->write_idx - ring->read_idx) :
                      (ring->write_idx + ring->capacity - ring->read_idx);
 

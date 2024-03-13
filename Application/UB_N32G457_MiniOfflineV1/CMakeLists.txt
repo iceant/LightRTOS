@@ -131,6 +131,11 @@ foreach (item IN LISTS MODULE_SYSTEM_DATETIME_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
+file(GLOB MODULE_CURRENT_SENSOR_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/CurrentSensor/*.c)
+foreach (item IN LISTS MODULE_CURRENT_SENSOR_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
 ########################################################################################################################
 add_executable(${PROJECT_NAME} "")
 target_sources(${PROJECT_NAME}
@@ -151,9 +156,12 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${DEVICE_A7670C_STATUS_CONTROL_SOURCES}
         PUBLIC ${DEVICE_A7670C_V25TER_SOURCES}
         PUBLIC ${DEVICE_IM1253E_SOURCES}
+
         PUBLIC ${MODULE_CONSOLE_SOURCES}
         PUBLIC ${MODULE_NTP_SOURCES}
         PUBLIC ${MODULE_SYSTEM_DATETIME_SOURCES}
+        PUBLIC ${MODULE_CURRENT_SENSOR_SOURCES}
+
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/BSP)
@@ -172,9 +180,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/De
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/StatusControl)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/V25TER)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/IM1253E)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/NTP)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/SystemDateTime)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/CurrentSensor)
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC N32G45x

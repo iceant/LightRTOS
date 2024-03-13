@@ -122,16 +122,43 @@ void board_init(void)
     
     /* BSP Device On */
     
-    BSP_USART1_Init();
+    BSP_USART1_Init();  /* CONSOLE IO */
     sFLASH_Init();
-    BSP_I2C1_Init();
-    BSP_UART5_Init();
-    BSP_UART7_Init();
-
+    
+#if defined(MS_TIME_ENABLE)
     BSP_TIM2_Init();
+#endif
 
+#if defined(RTC_ENABLE)
+    BSP_I2C1_Init();    /* RTC IO */
+#endif
+
+#if defined(NETWORK_ENABLE)
+    BSP_UART5_Init();   /* NETWORK IO */
+#endif
+
+#if defined(VOLTAGE_SENSOR_ENABLE)
+    BSP_UART7_Init();   /* IM1253E IO */
+#endif
+
+#if defined(CURRENT_SENSOR_ENABLE)
+    BSP_CAN2_Init();    /* CURRENT IO */
+#endif
+
+#if defined(RTC_ENABLE)
     /* Device Configuration */
     DS1307_Init(&io_I2C1);
+#endif
+
+#if defined(NETWORK_ENABLE)
     A7670C_Init(&A7670C_PwrEnPin, &A7670C_PwrKeyPin, &A7670C_StatusPin, &A7670C_ResetPin, &A7670C_IO);
+#endif
+    
+#if defined(VOLTAGE_SENSOR_ENABLE)
     IM1253E_Init(&IM1253E_IO);
+#endif
+
+#if defined(CURRENT_SENSOR_ENABLE)
+    CurrentSensor_Init();
+#endif
 }

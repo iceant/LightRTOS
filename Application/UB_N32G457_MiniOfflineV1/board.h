@@ -34,6 +34,11 @@
 #include <bsp_uart7.h>
 #endif /*INCLUDED_BSP_UART7_H*/
 
+#ifndef INCLUDED_BSP_CAN2_H
+#include <bsp_can2.h>
+#endif /*INCLUDED_BSP_CAN2_H*/
+
+
 #ifndef INCLUDED_A7670C_H
 #include <A7670C.h>
 #endif /*INCLUDED_A7670C_H*/
@@ -57,6 +62,16 @@
 #ifndef INCLUDED_IM1253E_H
 #include <IM1253E.h>
 #endif /*INCLUDED_IM1253E_H*/
+
+#ifndef INCLUDED_CURRENTSENSOR_H
+#include <CurrentSensor.h>
+#endif /*INCLUDED_CURRENTSENSOR_H*/
+
+#ifndef INCLUDED_CONFIG_H
+#include <config.h>
+#endif /*INCLUDED_CONFIG_H*/
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ////

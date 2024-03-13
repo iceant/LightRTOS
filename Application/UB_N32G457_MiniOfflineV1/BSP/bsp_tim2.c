@@ -12,13 +12,16 @@
 #define BSP_TIM2_SECOND_THREAD_STACK_SIZE 512
 #define BSP_TIM2_SECOND_THREAD_PRIORITY 20
 #define BSP_TIM2_SECOND_THREAD_TIMESLICE 10
+
+//#define BSP_TIM2_USE_THREAD
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
 static BSP_TIM2_TimeUpHandler BSP_TIM2__TimeUpHandler=0;
 static void* BSP_TIM2__TimeUpHandler_Parameter = 0;
-static volatile uint32_t BSP_TIM2__TickCount=0;
+volatile uint32_t BSP_TIM2_TickCount=0;
 
+#if defined(BSP_TIM2_USE_THREAD)
 __ALIGNED(OS_ALIGN_SIZE)
 static uint8_t BSP_TIM2__SecondThread_Stack[BSP_TIM2_SECOND_THREAD_STACK_SIZE];
 static os_thread_t BSP_TIM2__SecondThread;
@@ -36,6 +39,10 @@ static void BSP_TIM2_SecondThread_Entry(void* p){
         }
     }
 }
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+////
 
 static void RCC_Configuration(void){
     /* PCLK1 = HCLK/4 */
@@ -55,6 +62,7 @@ static void NVIC_Configuration(void)
     NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
     
     NVIC_Init(&NVIC_InitStructure);
+    TIM_ConfigInt(TIM2, TIM_INT_UPDATE, ENABLE);
 }
 
 
@@ -89,16 +97,17 @@ static void TIM_Configuration(void)
 void BSP_TIM2_Init(void)
 {
     RCC_Configuration();
-    NVIC_Configuration();
     TIM_Configuration();
-    
+    NVIC_Configuration();
 
+#if defined(BSP_TIM2_USE_THREAD)
     os_thread_init(&BSP_TIM2__SecondThread, "TIM2_SecThd"
                    , BSP_TIM2_SecondThread_Entry, 0
                    , BSP_TIM2__SecondThread_Stack, sizeof(BSP_TIM2__SecondThread_Stack)
                    , BSP_TIM2_SECOND_THREAD_PRIORITY
                    , BSP_TIM2_SECOND_THREAD_TIMESLICE);
     os_thread_startup(&BSP_TIM2__SecondThread);
+#endif
 }
 
 void BSP_TIM2_SetTimeUpHandler(BSP_TIM2_TimeUpHandler TimeUpHandler, void* userdata)
@@ -113,10 +122,8 @@ void BSP_TIM2_SetTimeUpHandler(BSP_TIM2_TimeUpHandler TimeUpHandler, void* userd
 }
 
 volatile uint32_t BSP_TIM2_GetTickCount(void){
-    return BSP_TIM2__TickCount;
+    return BSP_TIM2_TickCount;
 }
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,16 +132,20 @@ void TIM2_IRQHandler(void)
 {
     if (TIM_GetIntStatus(TIM2, TIM_INT_UPDATE) != RESET)
     {
-        BSP_TIM2__TickCount++;
-        TIM_ClrIntPendingBit(TIM2, TIM_INT_UPDATE);
+        BSP_TIM2_TickCount++;
         
-//        if(BSP_TIM2__ThreadReadyFlag==OS_TRUE){
-//            os_sem_release(&BSP_TIM2__Sem);
-//        }
+#if defined(BSP_TIM2_USE_THREAD)
+        if(BSP_TIM2__ThreadReadyFlag==OS_TRUE){
+            os_sem_release(&BSP_TIM2__Sem);
+        }
+#else
         if(BSP_TIM2__TimeUpHandler){
             BSP_TIM2__TimeUpHandler(BSP_TIM2__TimeUpHandler_Parameter);
         }
+
+#endif
         
+        TIM_ClrIntPendingBit(TIM2, TIM_INT_UPDATE);
         
     }
 }

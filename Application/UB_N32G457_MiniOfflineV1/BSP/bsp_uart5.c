@@ -1,5 +1,5 @@
 #include <bsp_uart5.h>
-#include <hw_gpio.h>
+
 #include <hw_usart.h>
 #include <stdio.h>
 #include <sdk_hex.h>
@@ -31,6 +31,7 @@ static os_bool_t UART5__TimeWaitFlag = OS_FALSE;
 
 static void UART5_RxThreadEntry(void* p){
     UART5__ThreadFlag = OS_TRUE;
+    printf("UART5_RxThreadEntry Startup...\n");
     while(1){
         os_sem_take(&UART5_RxSem, OS_WAIT_INFINITY);
         os_size_t used = sdk_ringbuffer_used(&UART5_RxBuffer);
