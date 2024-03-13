@@ -131,25 +131,25 @@ static void thread1_entry(void* p){
 //
 
 
-//    while(1){
-//
-//        printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
-//
-//        if(nCount%30==0){
-//            NTP_Sync();
-//        }
-//
-//        ShowDateTime();
-//
-//        os_thread_mdelay(timeout_ms);
-////        os_thread_sleep(1); /*调用 sleep 会让出 CPU，其它任务会获得执行机会*/
-////        os_thread_yield();
-//    }
-    
     while(1){
+
+        printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
+
+        if(nCount%30==0){
+            NTP_Sync();
+        }
+        ShowDateTime();
         OLED_ShowDateTime();
+
         os_thread_mdelay(1000);
+//        os_thread_sleep(1); /*调用 sleep 会让出 CPU，其它任务会获得执行机会*/
+//        os_thread_yield();
     }
+    
+//    while(1){
+//        OLED_ShowDateTime();
+//        os_thread_mdelay(1000);
+//    }
 }
 
 #endif
