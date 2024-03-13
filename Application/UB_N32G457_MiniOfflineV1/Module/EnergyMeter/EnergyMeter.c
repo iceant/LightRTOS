@@ -10,6 +10,8 @@
 ////
 
 #define HOUR_IN_MS 1000*60*60
+#define VOLTAGE_UNIT 10000
+#define CURRENT_UNIT 1000
 
 #define VOLTAGE_THREAD_STACK 1024
 #define VOLTAGE_THREAD_PRIORITY 20
@@ -89,9 +91,10 @@ static void Calculate_ThreadEntry(void* p){
     sdk_ap_t PowerMS = sdk_ap_new(0);
     EnergyMeter_Data_T* LatestData = 0;
     
-    sdk_ap_t C_Unit = sdk_ap_new(1000);/* Current: 0.001 */
-    sdk_ap_t V_Unit = sdk_ap_muli(C_Unit,  10000); /*Voltage: 0.0001*/
+    sdk_ap_t C_Unit = sdk_ap_new(CURRENT_UNIT);/* Current: 0.001 */
+    sdk_ap_t V_Unit = sdk_ap_muli(C_Unit,  VOLTAGE_UNIT/10); /*Voltage: 0.0001*/
     sdk_ap_t T_Unit = sdk_ap_muli(V_Unit, HOUR_IN_MS);
+//    sdk_ap_t K_Unit = sdk_ap_muli(V_Unit, 1000);
     
     BSP_CAN2_SetRxHandler(CurrentSensor__DataHandler, 0);
     printf("Calculate Thread Startup...\n");
@@ -120,7 +123,7 @@ static void Calculate_ThreadEntry(void* p){
                 sdk_ap_t EnergyWMs = sdk_ap_add(Calculate__EnergyWMs, EnergyMS_p);
                 sdk_ap_t EnergyWh = sdk_ap_div(EnergyWMs, T_Unit);
                 
-                sdk_fmt_print("Tick: %d, DeltaMS: %d, Current:%d, Voltage:%d, Calculate__EnergyWMs: %E, EnergyWh: %E \n"
+                sdk_fmt_print("Tick: %d, DeltaMS: %d, Current:%d, Voltage:%d, EnergyWMs: %E, EnergyWh: %E (0.0001) \n"
                               , LatestData->TimeMS
                               , DeltaMS
                               , Data->Current
