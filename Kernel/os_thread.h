@@ -54,8 +54,8 @@ typedef struct os_thread_s{
     os_tick_t init_ticks;
     os_priority_t current_priority;
     os_tick_t remain_ticks;
-    os_list_t ready_node;
-    os_list_t wait_node;
+    os_list_node_t ready_node;
+    os_list_node_t wait_node;
     os_timer_node_t timer_node;
     void (*thread_exit)(struct os_thread_s* thread);
     os_int_t state;
@@ -66,7 +66,7 @@ typedef struct os_thread_s{
 ////
 
 os_err_t os_thread_init(os_thread_t * thread
-        , const char name[OS_NAME_MAX_SIZE]
+        , const char* name
         , void (*thread_entry)(void*)
         , void* parameter
         , void* stack_addr

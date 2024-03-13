@@ -27,7 +27,6 @@ static BSP_UART5_RxHandler_Record bsp_uart5__rx_handler={.rx_handler  = 0, .user
 static os_size_t UART5_RxBufferUsed = 0;
 
 static void UART5_RxThreadEntry(void* p){
-    printf("UART5_RxThreadEntry Startup...\n");
     while(1){
         os_sem_take(&UART5_RxSem, OS_WAIT_INFINITY);
         os_size_t used = sdk_ringbuffer_used(&UART5_RxBuffer);
@@ -105,6 +104,7 @@ os_err_t BSP_UART5_TimeWait(os_tick_t ticks)
 {
 
     os_err_t err = os_sem_take(&bsp_uart5__rx_handler.lock, ticks);
+    UART5_RxBufferUsed = 0;
     printf("BSP_UART5_TimeWait: %d ticks, handler:%x return: %d\n", ticks, bsp_uart5__rx_handler.rx_handler,  err);
     return err;
 }

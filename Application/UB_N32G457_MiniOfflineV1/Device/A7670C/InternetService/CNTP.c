@@ -1,6 +1,7 @@
 #include <CNTP.h>
 #include <stdio.h>
 #include <assert.h>
+#include <sdk_hex.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -72,7 +73,6 @@ A7670C_Result A7670C_CNTP_Write(A7670C_CNTP_Write_Response *response, const char
 static A7670C_RxHandler_Result Exec_Handler(sdk_ringbuffer_t * buffer, void* ud)
 {
     A7670C_CNTP_Exec_Response* response = (A7670C_CNTP_Exec_Response*)ud;
-
     if(sdk_ringbuffer_find_str(buffer, 0, "+CNTP: ")!=-1 /*接收结束: 正确*/){
 //        printf("CNTP EXEC: %s\n", buffer->buffer);
         sdk_ringbuffer_text_t err_code_text;

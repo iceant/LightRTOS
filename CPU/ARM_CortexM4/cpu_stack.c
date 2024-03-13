@@ -2,6 +2,7 @@
 #include <cpu_atomic.h>
 #include <assert.h>
 #include <cpu_spinlock.h>
+#include <stdio_ext.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define CPU_STACK_SWITCH_FLAG_ON    1
@@ -86,7 +87,7 @@ int cpu_stack_switch(void** current_stack_p, void** next_stack_p)
         cpu__stack_next_p = next_stack_p;
     }
     cpu_spinlock_unlock(&cpu_stack__spinlock);
-    
+
     if(cpu__in_privilege()==1){
         /*设置中断需要特权，已在特权模式，直接设置*/
         CPU_REG(SCB_ICSR) |= SCB_ICSR_PENDSVSET_Msk;
@@ -94,7 +95,7 @@ int cpu_stack_switch(void** current_stack_p, void** next_stack_p)
         /*设置中断需要特权，没有特权，通过 SVC 来设置*/
         __svc(0);
     }
-    
+
     return 0;
 }
 

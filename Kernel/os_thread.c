@@ -21,7 +21,7 @@ static void os_thread__exit(os_thread_t * thread){
 ////
 
 os_err_t os_thread_init(os_thread_t * thread
-        , const char name[OS_NAME_MAX_SIZE]
+        , const char* name
         , void (*thread_entry)(void*)
         , void* parameter
         , void* stack_addr
@@ -50,7 +50,7 @@ os_err_t os_thread_init(os_thread_t * thread
     
     thread->state = OS_THREAD_STATE_SUSPENDED;
     
-    int err = cpu_stack_init(thread_entry, parameter, stack_addr, stack_size, &thread->sp);
+    int err = cpu_stack_init((void*)thread_entry, parameter, stack_addr, stack_size, &thread->sp);
     
     return err==0?OS_EOK:OS_ERROR;
 }

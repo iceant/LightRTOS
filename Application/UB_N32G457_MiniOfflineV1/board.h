@@ -46,6 +46,11 @@
 #include <bsp_tim2.h>
 #endif /*INCLUDED_BSP_TIM2_H*/
 
+#ifndef INCLUDED_BSP_CPUID_H
+#include <bsp_cpuid.h>
+#endif /*INCLUDED_BSP_CPUID_H*/
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ////

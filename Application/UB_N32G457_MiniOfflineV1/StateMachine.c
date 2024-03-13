@@ -36,7 +36,6 @@ int StateMachine_SetState(StateMachine_T * StateMachine, StateMachine_State_T* S
 int StateMachine_GetState(StateMachine_T* StateMachine, int StateCode, StateMachine_State_T** State){
     os_size_t i;
     StateMachine_State_T* state_p = 0;
-    os_err_t err;
     for(i=0; i< StateMachine->states.size; i++){
         sdk_array_get(&StateMachine->states, i, (void**)&state_p);
         if(state_p && state_p->state == StateCode){
@@ -70,7 +69,7 @@ int StateMachine_FindTransition(StateMachine_T* StateMachine, int ToStateCode, S
     if(!StateMachine->current_state) return OS_ERROR;
 
     for(i=0; i<StateMachine->current_state->transitions.size; i++){
-        sdk_array_get(&StateMachine->current_state->transitions, i, &transition_p);
+        sdk_array_get(&StateMachine->current_state->transitions, i, (void**)&transition_p);
         if(transition_p->target_state==ToStateCode){
             *transition = transition_p;
             return OS_EOK;
