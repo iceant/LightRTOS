@@ -94,17 +94,18 @@ os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks)
         }
         
         assert(sem->value==0);
-        
         current_thread = os_scheduler_current_thread();
+        assert(current_thread);
         current_thread->error = OS_THREAD_EOK;
 
-        if(!(current_thread->state & OS_THREAD_STATE_RUNNING)){
-            printf("current_thread->state: %d\n", current_thread->state);
-            cpu_spinlock_unlock(&sem->lock);
-            continue;
-        }
-//        assert(current_thread->state & OS_THREAD_STATE_RUNNING);
-//        assert(OS_LIST_IS_EMPTY(&current_thread->wait_node));
+//        if(current_thread && !(current_thread->state & OS_THREAD_STATE_RUNNING)){
+//            printf("current_thread->state: %d\n", current_thread->state);
+//            cpu_spinlock_unlock(&sem->lock);
+//            os_scheduler_schedule();
+//            continue;
+//        }
+        assert(current_thread->state & OS_THREAD_STATE_RUNNING);
+        assert(OS_LIST_IS_EMPTY(&current_thread->wait_node));
         
         if(ticks==0){
             cpu_spinlock_unlock(&sem->lock);

@@ -19,13 +19,17 @@ static os_thread_t Boot_Thread;
 ////
 
 static void Boot_Thread_Entry(void* p){
-    
+    printf("Boot Thread Entry Enter...\n");
+
     Console_Init();
-    
+
+    printf("A7670C Startup...\n");
     A7670C_Startup();
 
+    printf("NTP Startup...\n");
     NTP_Init();
 
+    printf("SystemDateTime Startup...\n");
     SystemDateTime_Init();
     
     while(1){
@@ -41,6 +45,15 @@ static void Boot_Thread_Entry(void* p){
                , dateTime.millisecond
                , BSP_TIM2_GetTickCount()
                );
+
+        uint32_t Voltage = 0;
+        IM1253E_GetVoltage(&Voltage, 120);
+        printf("IM1253E_Voltage: %ld\n", Voltage);
+
+        IM1253E_Data_T IM1253E_Data;
+        IM1253E_GetData(&IM1253E_Data, 140);
+        printf("IM1253E_DATA Voltage: %ld\n", Voltage);
+
         os_thread_mdelay(1000);
     }
 }

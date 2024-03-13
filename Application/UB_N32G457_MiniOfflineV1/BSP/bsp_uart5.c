@@ -25,8 +25,12 @@ static uint8_t UART5_RxBlock[UART5_RX_BLOCK_SIZE];
 static sdk_ringbuffer_t UART5_RxBuffer;
 static BSP_UART5_RxHandler_Record bsp_uart5__rx_handler={.rx_handler  = 0, .userdata = 0};
 static os_size_t UART5_RxBufferUsed = 0;
+static os_bool_t UART5__ThreadFlag = OS_FALSE;
+static os_bool_t UART5__TimeWaitFlag = OS_FALSE;
+
 
 static void UART5_RxThreadEntry(void* p){
+    UART5__ThreadFlag = OS_TRUE;
     while(1){
         os_sem_take(&UART5_RxSem, OS_WAIT_INFINITY);
         os_size_t used = sdk_ringbuffer_used(&UART5_RxBuffer);
@@ -50,7 +54,9 @@ void UART5_IRQHandler(void){
     if (USART_GetIntStatus(UART5, USART_INT_RXDNE) != RESET)
     {
         sdk_ringbuffer_put(&UART5_RxBuffer,  USART_ReceiveData(UART5));
-        os_sem_release(&UART5_RxSem);
+        if(UART5__ThreadFlag==OS_TRUE){
+            os_sem_release(&UART5_RxSem);
+        }
     }
 }
 
@@ -102,14 +108,17 @@ os_err_t BSP_UART5_Send(uint8_t * data, os_size_t size)
 
 os_err_t BSP_UART5_TimeWait(os_tick_t ticks)
 {
-
+    UART5__TimeWaitFlag = OS_TRUE;
     os_err_t err = os_sem_take(&bsp_uart5__rx_handler.lock, ticks);
+    UART5__TimeWaitFlag = OS_FALSE;
     UART5_RxBufferUsed = 0;
     printf("BSP_UART5_TimeWait: %d ticks, handler:%x return: %d\n", ticks, bsp_uart5__rx_handler.rx_handler,  err);
     return err;
 }
 
 void BSP_UART5_Notify(void){
-    os_sem_release(&bsp_uart5__rx_handler.lock);
+    if(UART5__TimeWaitFlag==OS_TRUE){
+        os_sem_release(&bsp_uart5__rx_handler.lock);
+    }
 }
 

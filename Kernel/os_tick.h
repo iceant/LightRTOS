@@ -16,4 +16,6 @@ typedef os_uint_t os_tick_t;
 
 os_tick_t os_tick_from_millisecond(uint32_t ms);
 
+os_size_t os_tick_to_millisecond(os_tick_t ticks);
+
 #endif /*INCLUDED_OS_TICK_H*/

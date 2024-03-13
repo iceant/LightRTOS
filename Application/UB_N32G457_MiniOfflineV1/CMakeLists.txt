@@ -59,6 +59,11 @@ foreach (item IN LISTS DEVICE_DS1307_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
+file(GLOB DEVICE_IM1253E_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/IM1253E/*.c)
+foreach (item IN LISTS DEVICE_IM1253E_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
 ########################################################################################################################
 file(GLOB DEVICE_A7670C_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/Common/*.c)
 foreach (item IN LISTS DEVICE_A7670C_COMMON_SOURCES)
@@ -145,6 +150,7 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${DEVICE_A7670C_SIM_CARD_SOURCES}
         PUBLIC ${DEVICE_A7670C_STATUS_CONTROL_SOURCES}
         PUBLIC ${DEVICE_A7670C_V25TER_SOURCES}
+        PUBLIC ${DEVICE_IM1253E_SOURCES}
         PUBLIC ${MODULE_CONSOLE_SOURCES}
         PUBLIC ${MODULE_NTP_SOURCES}
         PUBLIC ${MODULE_SYSTEM_DATETIME_SOURCES}
@@ -165,6 +171,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/De
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/SIMCard)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/StatusControl)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/V25TER)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/IM1253E)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/NTP)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/SystemDateTime)

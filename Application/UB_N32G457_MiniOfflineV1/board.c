@@ -89,7 +89,11 @@ static A7670C_IO_T A7670C_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_UAR
                                 .wait=BSP_UART5_TimeWait,
                                 .send=BSP_UART5_Send,
                                 .notify = BSP_UART5_Notify};
-
+static IM1253E_IO_T IM1253E_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_UART7_SetRxHandler,
+                                  .wait = BSP_UART7_TimeWait,
+                                  .send = BSP_UART7_Send,
+                                  .notify = BSP_UART7_Notify
+                                  };
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -122,10 +126,12 @@ void board_init(void)
     sFLASH_Init();
     BSP_I2C1_Init();
     BSP_UART5_Init();
+    BSP_UART7_Init();
+
     BSP_TIM2_Init();
 
     /* Device Configuration */
     DS1307_Init(&io_I2C1);
     A7670C_Init(&A7670C_PwrEnPin, &A7670C_PwrKeyPin, &A7670C_StatusPin, &A7670C_ResetPin, &A7670C_IO);
-
+    IM1253E_Init(&IM1253E_IO);
 }
