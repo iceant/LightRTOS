@@ -38,6 +38,13 @@
 #include <bsp_power3v3.h>
 #endif /*INCLUDED_BSP_POWER3V3_H*/
 
+#ifndef INCLUDED_SPI_FLASH_H
+#include <spi_flash.h>
+#endif /*INCLUDED_SPI_FLASH_H*/
+
+#ifndef INCLUDED_BSP_TIM2_H
+#include <bsp_tim2.h>
+#endif /*INCLUDED_BSP_TIM2_H*/
 
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -115,12 +115,14 @@ void board_init(void)
     hw_gpio_init(GPIOE, GPIO_PIN_6, GPIO_Mode_Out_PP, GPIO_Speed_50MHz); /* 4G PWR_EN */
     hw_gpio_init(GPIOB, GPIO_PIN_10, GPIO_Mode_IN_FLOATING, GPIO_Speed_50MHz); /* 4G Status */
     hw_gpio_high(GPIOE, GPIO_PIN_6); /*Turn On 4G Module*/
-
+    
+    /* BSP Device On */
+    
     BSP_USART1_Init();
+    sFLASH_Init();
     BSP_I2C1_Init();
     BSP_UART5_Init();
-
-    /* BSP Device On */
+    BSP_TIM2_Init();
 
     /* Device Configuration */
     DS1307_Init(&io_I2C1);
