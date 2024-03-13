@@ -89,6 +89,13 @@ __STATIC_FORCEINLINE void SDT__AddOneSecond(void){
     }
 }
 
+__STATIC_FORCEINLINE void SDT__AddMilliseconds(uint16_t ms){
+    SDT__CurrentDateTime.millisecond += ms;
+    while(SDT__CurrentDateTime.millisecond>999){
+        SDT__CurrentDateTime.millisecond-=1000;
+        SDT__AddOneSecond();
+    }
+}
 
 static void SystemDateTime__TIM2_TimeUpHandler(void* userdata){
     SDT__CurrentDateTime.millisecond++;
