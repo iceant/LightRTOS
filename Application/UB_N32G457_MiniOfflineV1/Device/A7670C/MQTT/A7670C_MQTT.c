@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
+#include <sdk_hex.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +41,7 @@ static A7670C_RxHandler_Result A7670C_CMQTTRX_DownstreamHandler(sdk_ringbuffer_t
     os_size_t buffer_used = sdk_ringbuffer_used(buffer);
     int find = sdk_ringbuffer_cut(&find_result, buffer, 0, (int)buffer_used, (const char*)"+CMQTTRXEND: ", "\r\n");
     if(find==0){
+        sdk_hex_dump("CMQTTRXEND", buffer->buffer, buffer_used);
         find = sdk_ringbuffer_cut(&find_result, buffer, 0, (int)buffer_used, (const char*)"+CMQTTRXSTART: ", "\r\n");
         if(find!=0) {
             sdk_ringbuffer_reset(buffer);
@@ -125,6 +127,7 @@ static A7670C_RxHandler_Result A7670C_CMQTTRX_DownstreamHandler(sdk_ringbuffer_t
     
     find = sdk_ringbuffer_cut(&find_result, buffer, 0, (int)buffer_used, "+CMQTTCONNLOST: ", "\r\n");
     if(find==0){
+        sdk_hex_dump("CMQTTCONNLOST", buffer->buffer, buffer_used);
         session->state = kA7670C_MQTT_State_CONNLOST;
         sdk_ringbuffer_reset(buffer);
         A7670C_Notify();

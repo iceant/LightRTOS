@@ -48,7 +48,10 @@ static os_mutex_t MQTT_Lock;
 ////
 static void MQTT__RxDataHandler(void* data, int data_size, void* userdata)
 {
-
+    sdk_hex_dump("MQTT_RxDataHandler", data, data_size);
+    if(strstr((char*)data, "config reboot=1")){
+        __svc(1);
+    }
 }
 
 static void MQTT__OnConnectLost(void){
@@ -97,8 +100,8 @@ static void MQTT__TxThreadEntry(void* p){
         for(int i=0; i<used; i++){
             task = sdk_ring_pop(&MQTT__TxTaskRing);
             if(task!=0){
-                printf("MQTT_TxThread Exec Publish...\n");
-                sdk_hex_dump("MQTT_TxThreadPub", task->buffer, task->size);
+//                printf("MQTT_TxThread Exec Publish...\n");
+//                sdk_hex_dump("MQTT_TxThreadPub", task->buffer, task->size);
                 A7670C_Result result = A7670C_MQTT_Publish(&session, MQTT__Topic_Upstream
                                     , task->buffer, task->size
                                     , kA7670C_Qos_1
@@ -116,9 +119,9 @@ static void MQTT__TxThreadEntry(void* p){
                             , kA7670C_Bool_No);
                 }
 
-                if(result==kA7670C_Result_OK){
-                    sdk_hex_dump("MQTT_Send", task->buffer, 32);
-                }
+//                if(result==kA7670C_Result_OK){
+//                    sdk_hex_dump("MQTT_Send", task->buffer, 32);
+//                }
             }
         }
     }

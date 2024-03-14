@@ -86,7 +86,7 @@ A7670C_Result A7670C_CMQTTPAYLOAD_Write(A7670C_CMQTTPAYLOAD_Write_Response* resu
     result->code = kA7670C_Response_Code_ERROR;
     result->err_code = -1;
     A7670C_CMQTTPAYLOAD_Write_Request request={.response=result, .data = data, .data_size=data_size, .send_flag = false};
-    sdk_hex_dump("CMQTTPAYLOAD_PARAM", data, data_size);
+//    sdk_hex_dump("CMQTTPAYLOAD_PARAM", data, data_size);
     A7670C_Result err = A7670C_RequestWithArgs(Write_Handler, &request, os_tick_from_millisecond(timeout_ms), "AT+CMQTTPAYLOAD=%d,%d\r\n"
             , client_index
             , data_size);
