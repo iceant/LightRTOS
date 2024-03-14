@@ -71,7 +71,25 @@
 #include <config.h>
 #endif /*INCLUDED_CONFIG_H*/
 
+#ifndef INCLUDED_BSP_LED_RED_H
+#include <bsp_led_red.h>
+#endif /*INCLUDED_BSP_LED_RED_H*/
 
+#ifndef INCLUDED_BSP_LED_GREEN_H
+#include <bsp_led_green.h>
+#endif /*INCLUDED_BSP_LED_GREEN_H*/
+
+#ifndef INCLUDED_BSP_KEY_H
+#include <bsp_key.h>
+#endif /*INCLUDED_BSP_KEY_H*/
+
+#ifndef INCLUDED_KEY_H
+#include <Key.h>
+#endif /*INCLUDED_KEY_H*/
+
+#ifndef INCLUDED_MQTT_H
+#include <MQTT.h>
+#endif /*INCLUDED_MQTT_H*/
 
 ////////////////////////////////////////////////////////////////////////////////
 ////

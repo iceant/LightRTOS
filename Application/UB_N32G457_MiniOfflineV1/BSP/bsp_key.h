@@ -1,0 +1,20 @@
+#ifndef INCLUDED_BSP_KEY_H
+#define INCLUDED_BSP_KEY_H
+
+
+////////////////////////////////////////////////////////////////////////////////
+////
+typedef void (*BSP_Key_Click)(void);
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+void BSP_Key_Init(void);
+
+void BSP_Key_Set(BSP_Key_Click onDown, BSP_Key_Click onUp);
+
+int BSP_Key_GetStatus(void);
+
+#endif /*INCLUDED_BSP_KEY_H*/

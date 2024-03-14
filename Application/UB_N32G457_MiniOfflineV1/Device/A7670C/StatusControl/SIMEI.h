@@ -16,6 +16,7 @@ A7670C_Result A7670C_SIMEI_Test(bool* result, uint32_t timeout_ms);
 ////////////////////////////////////////////////////////////////////////////////
 ////
 typedef struct A7670C_SIMEI_Read_Response{
+    A7670C_Response_Code code;
     char value[16]; /* IMEI 是15位，加一位 \0 */
 }A7670C_SIMEI_Read_Response;
 

@@ -81,14 +81,18 @@ static uint8_t A7670C_StatusPin_Read(void){
 
 static io_i2c_t io_I2C1 = {.send=BSP_I2C1_Send, .recv=BSP_I2C1_Recv, .reset = BSP_I2C1_Reset};
 
+#if defined(NETWORK_ENABLE)
 static A7670C_Pin_T A7670C_ResetPin = {.on = A7670C_ResetPin_On, .off = A7670C_ResetPin_Off, .read = A7670C_ResetPin_Read };
 static A7670C_Pin_T A7670C_PwrKeyPin = {.on = A7670C_PwrKeyPin_On, .off = A7670C_PwrKeyPin_Off, .read = A7670C_PwrKeyPin_Read };
 static A7670C_Pin_T A7670C_PwrEnPin = {.on = A7670C_PwrEnPin_On, .off = A7670C_PwrEnPin_Off, .read = A7670C_PwrEnPin_Read };
 static A7670C_Pin_T A7670C_StatusPin = {.on = A7670C_StatusPin_On, .off = A7670C_StatusPin_Off, .read = A7670C_StatusPin_Read };
 static A7670C_IO_T A7670C_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_UART5_SetRxHandler,
+                                .setDefaultRxHandler = (void (*)(void *, void *)) BSP_UART5_SetDefaultRxHandler,
                                 .wait=BSP_UART5_TimeWait,
                                 .send=BSP_UART5_Send,
                                 .notify = BSP_UART5_Notify};
+#endif
+
 static IM1253E_IO_T IM1253E_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_UART7_SetRxHandler,
                                   .wait = BSP_UART7_TimeWait,
                                   .send = BSP_UART7_Send,
@@ -121,6 +125,12 @@ void board_init(void)
     /* BSP Device On */
     
     BSP_USART1_Init();  /* CONSOLE IO */
+
+    BSP_LED_Green_Init(); /* LED GREEN */
+    BSP_LED_Red_Init(); /* LED RED */
+
+    BSP_Key_Init();
+
     sFLASH_Init();
     
 #if defined(MS_TIME_ENABLE)

@@ -39,6 +39,7 @@ typedef struct A7670C_Pin_S{
 
 typedef struct A7670C_IO_S{
     void (*setRxHandler)(void* handler, void* userdata);
+    void (*setDefaultRxHandler)(void* handler, void* userdata);
     os_err_t (*wait)(os_time_t timeout_ms);
     os_err_t (*send)(uint8_t * data, os_size_t size);
     void (*notify)(void);
@@ -106,7 +107,7 @@ void A7670C_SetRxHandler(A7670C_RxHandler_Handle* previousHandle, A7670C_RxHandl
 
 void A7670C_RestoreRxHandler(A7670C_RxHandler_Handle* rxHandlerHandle);
 
-void A7670C_SetDefaultRxHandler(A7670C_RxHandler_Handle* previousHandle, A7670C_RxHandler_T* rxHandler, void* userdata);
+void A7670C_SetDefaultRxHandler(A7670C_RxHandler_T* rxHandler, void* userdata);
 
 void A7670C_Lock(void);
 

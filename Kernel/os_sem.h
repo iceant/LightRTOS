@@ -23,6 +23,12 @@
 #ifndef INCLUDED_CPU_SPINLOCK_H
 #include <cpu_spinlock.h>
 #endif /* INCLUDED_CPU_SPINLOCK_H */
+
+#ifndef INCLUDED_OS_THREAD_H
+#include <os_thread.h>
+#endif /*INCLUDED_OS_THREAD_H*/
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -40,6 +46,8 @@ typedef struct os_sem_s{
 os_err_t os_sem_init(os_sem_t* sem, const char* name, int value, int flag);
 
 os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks);
+
+os_err_t os_sem_assert_take(os_sem_t * sem, os_thread_t * assert_owner, os_tick_t ticks);
 
 os_err_t os_sem_release(os_sem_t* sem);
 

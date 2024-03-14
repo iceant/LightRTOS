@@ -80,46 +80,114 @@ os_err_t os_sem_init(os_sem_t* sem, const char* name, int value, int flag)
     return OS_EOK;
 }
 
-
-os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks)
-{
+os_err_t os_sem_assert_take(os_sem_t * sem, os_thread_t * assert_owner, os_tick_t ticks){
     volatile os_thread_t * current_thread;
+
     while(1){
         cpu_spinlock_lock(&sem->lock);
         if(sem->value>0){
             sem->value--;
             /* 在 Take 前有 Release 发生，可以在初始化 sem 时，设置初始 Value，这样可以达到控制的目的 */
             cpu_spinlock_unlock(&sem->lock);
+
             return OS_EOK;
         }
-        
+
         assert(sem->value==0);
-        current_thread = os_scheduler_current_thread();
+        current_thread = os_thread_self();
         assert(current_thread);
         current_thread->error = OS_THREAD_EOK;
 
-//        if(current_thread && !(current_thread->state & OS_THREAD_STATE_RUNNING)){
-//            printf("current_thread->state: %d\n", current_thread->state);
-//            cpu_spinlock_unlock(&sem->lock);
-//            os_scheduler_schedule();
-//            continue;
-//        }
+        if(assert_owner!=current_thread){
+            printf("Sem[%s]: Current Thread: %s is not Owner Thread: %s\n"
+                    , sem->name
+                    , current_thread->name
+                    , assert_owner->name
+            );
+            while(1);
+        }
+
+        assert(assert_owner==current_thread);
+
+        if(current_thread && !(current_thread->state & OS_THREAD_STATE_RUNNING)){
+            printf("Sem[%s] Owner:%s current_thread[%s]->state: %d\n"
+                    , sem->name
+                    , assert_owner->name
+                    , current_thread->name
+                    , current_thread->state);
+        }
         assert(current_thread->state & OS_THREAD_STATE_RUNNING);
+
+        if(!OS_LIST_IS_EMPTY(&current_thread->wait_node)){
+            printf("Sem[%s] current_thread[%s]->wait_node is not empty!!!\n", sem->name, current_thread->name);
+        }
         assert(OS_LIST_IS_EMPTY(&current_thread->wait_node));
-        
+
+        if(ticks==0){
+            cpu_spinlock_unlock(&sem->lock);
+
+            return OS_ETIMEOUT;
+        }else if(ticks == OS_WAIT_INFINITY){
+            os_sem__insert(sem, current_thread); /* 挂在 sem 上 */
+
+            current_thread->state = OS_THREAD_STATE_WAIT;
+            cpu_spinlock_unlock(&sem->lock);
+
+            os_scheduler_schedule();
+        }else{
+            os_sem__insert(sem, current_thread); /* 挂在 sem 上 */
+            cpu_spinlock_unlock(&sem->lock);
+
+            /* 有等待时间，挂在 timer 上, 这里会调度 */
+            os_scheduler_timed_wait((os_thread_t*)current_thread, ticks);
+
+            /* 线程唤醒以后，检查是否超时 */
+            if(current_thread->error == OS_THREAD_ETIMEOUT){
+
+                return OS_ETIMEOUT;
+            }
+        }
+    }
+}
+
+os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks)
+{
+    volatile os_thread_t * current_thread;
+
+    while(1){
+        cpu_spinlock_lock(&sem->lock);
+//        printf("Sem[%s] Locked By Thread:%s\n", sem->name, os_thread_self()->name);
+        if(sem->value>0){
+            sem->value--;
+            /* 在 Take 前有 Release 发生，可以在初始化 sem 时，设置初始 Value，这样可以达到控制的目的 */
+            cpu_spinlock_unlock(&sem->lock);
+            return OS_EOK;
+        }
+
+        assert(sem->value==0);
+        current_thread = os_thread_self();
+        current_thread->error = OS_THREAD_EOK;
+
+//        assert(current_thread->state & OS_THREAD_STATE_RUNNING);
+//        assert(OS_LIST_IS_EMPTY(&current_thread->wait_node));
+        if(!(current_thread->state & OS_THREAD_STATE_RUNNING)){
+            os_scheduler_schedule();
+            continue;
+        }
+
         if(ticks==0){
             cpu_spinlock_unlock(&sem->lock);
             return OS_ETIMEOUT;
         }else if(ticks == OS_WAIT_INFINITY){
             os_sem__insert(sem, current_thread); /* 挂在 sem 上 */
-            
             current_thread->state = OS_THREAD_STATE_WAIT;
             cpu_spinlock_unlock(&sem->lock);
+
             os_scheduler_schedule();
+
         }else{
             os_sem__insert(sem, current_thread); /* 挂在 sem 上 */
             cpu_spinlock_unlock(&sem->lock);
-            
             /* 有等待时间，挂在 timer 上, 这里会调度 */
             os_scheduler_timed_wait((os_thread_t*)current_thread, ticks);
             

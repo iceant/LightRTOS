@@ -11,12 +11,16 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
+
+////////////////////////////////////////////////////////////////////////////////
+////
 static cpu_spinlock_t os_scheduler__tick_lock={.atomic.counter =0};
 static cpu_spinlock_t os_scheduler__lock={.atomic.counter = 0};
 static volatile os_tick_t os_scheduler__tick_count=0;
 static volatile os_thread_t* os_scheduler__current_thread=0;
 static os_list_t os_scheduler__ready_table[OS_PRIORITY_MAX];
 static volatile os_bool_t os_scheduler__init_flag = OS_FALSE;
+static volatile int os_scheduler__ctrl_flag = 0;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -29,7 +33,7 @@ static void os_scheduler__SysTickHandler(void){
     register volatile os_thread_t * current_thread;
     register os_bool_t tick_schedule_flag = OS_FALSE;
     register os_bool_t timer_schedule_flag = OS_FALSE;
-    
+
     cpu_spinlock_lock(&os_scheduler__tick_lock);
     {
         os_scheduler__tick_count++;
@@ -114,6 +118,12 @@ os_err_t os_scheduler_init(void){
     return OS_EOK;
 }
 
+void os_scheduler_ctrl(int ctrl_flag)
+{
+    OS_SCHEDULER_LOCK();
+    os_scheduler__ctrl_flag = ctrl_flag;
+    OS_SCHEDULER_UNLOCK();
+}
 
 os_err_t os_scheduler_schedule(void)
 {
@@ -121,9 +131,16 @@ os_err_t os_scheduler_schedule(void)
     os_thread_t * next_thread;
     register volatile void** curr_stack_p = 0;
     register volatile void** next_stack_p = 0;
-    
+
+    if(os_scheduler__ctrl_flag==OS_SCHEDULER_CTRL_STOP){
+        return OS_ESTOP;
+    }
+
     OS_SCHEDULER_LOCK();
-    
+    if(os_scheduler__ctrl_flag==OS_SCHEDULER_CTRL_STOP){
+        return OS_ESTOP;
+    }
+
     curr_thread = os_scheduler__current_thread;
     
     if(curr_thread!=0 && (curr_thread->state & OS_THREAD_STATE_RUNNING) && (curr_thread->remain_ticks>0)){

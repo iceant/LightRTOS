@@ -32,6 +32,7 @@ static A7670C_RxHandler_Result SIMEI_Read_Handler(sdk_ringbuffer_t *buffer, void
     sdk_ringbuffer_text_t find_result;
 
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1 /*接收结束*/){
+        result->code = kA7670C_Response_Code_OK;
         int find = sdk_ringbuffer_cut(&find_result, buffer, 0, sdk_ringbuffer_used(buffer), "+SIMEI: ", "\r\n");
         if(find==0){
             int size = find_result.end - find_result.start;
@@ -53,6 +54,7 @@ static A7670C_RxHandler_Result SIMEI_Read_Handler(sdk_ringbuffer_t *buffer, void
 
 A7670C_Result A7670C_SIMEI_Read(A7670C_SIMEI_Read_Response* result, uint32_t timeout_ms)
 {
+    result->code = kA7670C_Response_Code_ERROR;
     A7670C_Result err = A7670C_RequestWithCmd(SIMEI_Read_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+SIMEI?\r\n");
     return err;
 }

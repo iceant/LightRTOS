@@ -1,0 +1,10 @@
+#ifndef INCLUDED_KEY_H
+#define INCLUDED_KEY_H
+
+////////////////////////////////////////////////////////////////////////////////
+////
+void Key_Init(void);
+
+
+
+#endif /*INCLUDED_KEY_H*/

@@ -1,6 +1,8 @@
 #include <bsp_can2.h>
 #include <os_kernel.h>
 #include <sdk_ring.h>
+#include <stdio.h>
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define BSP_CAN2_RX_THREAD_STACK_SIZE   1024
@@ -46,27 +48,10 @@
 static BSP_CAN2_RxHandler BSP_CAN2__RxHandler=0;
 static void* BSP_CAN2__RxHandlerParameter=0;
 
-__ALIGNED(OS_ALIGN_SIZE)
-static uint8_t BSP_CAN2__RxThreadStack[BSP_CAN2_RX_THREAD_STACK_SIZE];
-static os_thread_t BSP_CAN2__RxThread;
-static os_sem_t BSP_CAN2__RxSem;
-static os_bool_t BSP_CAN2__RxThreadFlag = OS_FALSE;
 
 static uint8_t BSP_CAN2__RingBlock[RING_BLOCK_SIZE];
 static sdk_ring_t BSP_CAN2__RxRing;
-////////////////////////////////////////////////////////////////////////////////
-////
 
-static void BSP_CAN2__RxThreadEntry(void* p){
-    CAN_INTConfig(CAN2, CAN_INT_FMP0, ENABLE);
-    BSP_CAN2__RxThreadFlag = OS_TRUE;
-    while(1){
-        os_sem_take(&BSP_CAN2__RxSem, OS_WAIT_INFINITY);
-        if(BSP_CAN2__RxHandler){
-            BSP_CAN2__RxHandler(&BSP_CAN2__RxRing, BSP_CAN2__RxHandlerParameter);
-        }
-    }
-}
 ////////////////////////////////////////////////////////////////////////////////
 ////
 static void NVIC_Config(void)
@@ -145,18 +130,12 @@ static void CAN_Config(void)
 ////
 
 void BSP_CAN2_Init(void){
-    os_sem_init(&BSP_CAN2__RxSem, "BSP_CAN2_RxSem", 0, OS_QUEUE_FIFO);
+
     sdk_ring_init(&BSP_CAN2__RxRing, BSP_CAN2__RingBlock, RING_OBJECT_COUNT, RING_OBJECT_SIZE);
     
     CAN_GPIO_Configuration();
     CAN_Config();
     NVIC_Config();
-    
-    os_thread_init(&BSP_CAN2__RxThread, "CAN2_Rx", BSP_CAN2__RxThreadEntry, 0
-        , BSP_CAN2__RxThreadStack, sizeof(BSP_CAN2__RxThreadStack)
-        , BSP_CAN2_RX_THREAD_PRIORITY
-        , BSP_CAN2_RX_THREAD_TIMESLICE);
-    os_thread_startup(&BSP_CAN2__RxThread);
 }
 
 
@@ -175,10 +154,9 @@ void BSP_CAN2_SetRxHandler(BSP_CAN2_RxHandler handler, void* userdata){
 
 void CAN2_RX0_IRQHandler(void)
 {
-    CanRxMessage RxMessage;
-    CAN_ReceiveMessage(CAN2, CAN_FIFO0, &RxMessage);
-    sdk_ring_put(&BSP_CAN2__RxRing, &RxMessage);
-    if(BSP_CAN2__RxThreadFlag==OS_TRUE){
-        os_sem_release(&BSP_CAN2__RxSem);
+    BSP_CAN2_Message RxMessage;
+    CAN_ReceiveMessage(CAN2, CAN_FIFO0, (CanRxMessage*)&RxMessage);
+    if(BSP_CAN2__RxHandler){
+        BSP_CAN2__RxHandler(&RxMessage, BSP_CAN2__RxHandlerParameter);
     }
 }

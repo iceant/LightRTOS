@@ -16,6 +16,7 @@ struct A7670C_Device_S{
 };
 
 static A7670C_RxHandler_Handle s_A7670C__RxHandler={.rxHandler = 0, .userdata = 0};
+static A7670C_RxHandler_Handle s_A7670C__DefaultRxHandler={.rxHandler = 0, .userdata = 0};
 static A7670C_Device_T A7670C__Instance;
 
 static os_sem_t rx_handler_lock;
@@ -49,9 +50,9 @@ A7670C_Device_T* A7670C_Init(A7670C_Pin_T* power_en, A7670C_Pin_T* power_key, A7
 void A7670C_PowerOn(void)
 {
     A7670C__Instance.power_en->on();
-    A7670C_NopDelay(10);
+    A7670C_NopDelay(0x3FFFFF);
     A7670C__Instance.power_key->on();
-    A7670C_NopDelay(100);
+    A7670C_NopDelay(0x3FFFFF);
     A7670C__Instance.power_key->off();
 }
 
@@ -77,6 +78,11 @@ void A7670C_UnLock(void){
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
+
+void A7670C_SetDefaultRxHandler(A7670C_RxHandler_T* rxHandler, void* userdata)
+{
+    A7670C__Instance.usart->setDefaultRxHandler(rxHandler, userdata);
+}
 
 os_size_t A7670C_Send(uint8_t* data, os_size_t size)
 {

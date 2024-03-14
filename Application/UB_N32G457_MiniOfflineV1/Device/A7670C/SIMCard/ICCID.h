@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 ////
 typedef struct A7670C_ICCID_Read_Response{
+    A7670C_Response_Code code;
     char ICCID[21];
 }A7670C_ICCID_Read_Response;
 

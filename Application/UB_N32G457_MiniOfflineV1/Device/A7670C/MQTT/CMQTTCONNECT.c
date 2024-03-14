@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <sdk_hex.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -238,6 +239,7 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t * buffer, void* ud
         
         result->code = kA7670C_Response_Code_ERROR;
         printf("Write_Handler: 4\n");
+        sdk_hex_dump("CMQTTCONNECT ERROR", buffer->buffer, sdk_ringbuffer_used(buffer));
         sdk_ringbuffer_reset(buffer);
         A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;

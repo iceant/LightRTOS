@@ -13,7 +13,7 @@ option(USE_TLSF "Use TLSF Memory Allocator" ON)
 
 add_definitions(
         -DCPU_TICKS_PER_SECOND=100
-        -DTLSF_MEMORY_POOL_SIZE=20480
+        -DTLSF_MEMORY_POOL_SIZE=10240
         -DCPU_32BIT
         -DUSE_TLSF
         -DSYSCLK_FREQ=100000000
@@ -115,6 +115,11 @@ foreach (item IN LISTS DEVICE_A7670C_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
+file(GLOB DEVICE_KEY_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/Key/*.c)
+foreach (item IN LISTS DEVICE_KEY_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
 ########################################################################################################################
 file(GLOB MODULE_CONSOLE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console/*.c)
 foreach (item IN LISTS CONSOLE_SOURCES)
@@ -133,6 +138,11 @@ endforeach ()
 
 file(GLOB MODULE_ENERGY_METER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/EnergyMeter/*.c)
 foreach (item IN LISTS MODULE_ENERGY_METER_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
+file(GLOB MODULE_MQTT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/MQTT/*.c)
+foreach (item IN LISTS MODULE_MQTT_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
@@ -156,11 +166,13 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${DEVICE_A7670C_STATUS_CONTROL_SOURCES}
         PUBLIC ${DEVICE_A7670C_V25TER_SOURCES}
         PUBLIC ${DEVICE_IM1253E_SOURCES}
+        PUBLIC ${DEVICE_KEY_SOURCES}
 
         PUBLIC ${MODULE_CONSOLE_SOURCES}
         PUBLIC ${MODULE_NTP_SOURCES}
         PUBLIC ${MODULE_SYSTEM_DATETIME_SOURCES}
         PUBLIC ${MODULE_ENERGY_METER_SOURCES}
+        PUBLIC ${MODULE_MQTT_SOURCES}
 
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -180,11 +192,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/De
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/StatusControl)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/V25TER)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/IM1253E)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/Key)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/NTP)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/SystemDateTime)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/EnergyMeter)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/MQTT)
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC N32G45x

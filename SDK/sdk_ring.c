@@ -9,7 +9,6 @@ void sdk_ring_init(sdk_ring_t * ring, void* array, os_size_t element_count, os_s
 {
     assert(ring);
     assert(array);
-    assert(element_count > element_size);
 
     ring->array = array;
     ring->capacity = element_count;

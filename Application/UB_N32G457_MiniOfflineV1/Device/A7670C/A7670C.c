@@ -48,11 +48,8 @@ A7670C_Result A7670C_Startup(void){
     int nRetry = 0;
 
 __A7670C__Boot:
-    A7670C_PowerOff();
-    A7670C_PowerOn();
-    A7670C_NopDelay(0x3FFFFF);
     while(!A7670C_IsPowerOn()){
-        printf("4G Power On...\n");
+        printf("[A7670C] Power is Off!\r\n");
         A7670C_PowerOff();
         A7670C_PowerOn();
         A7670C_NopDelay(0x3FFFFFF);
@@ -101,7 +98,7 @@ __A7670C__Boot:
         A7670C_NopDelay(0x3FFFFF);
     }
 
-#if 0
+#if 1
     nRetry = 0;
     while(1){
         printf("A7670C CS service(CREG)...");
@@ -114,7 +111,8 @@ __A7670C__Boot:
             }
         }
         if(nRetry++==10){
-            return kA7670C_Result_TIMEOUT;
+//            return kA7670C_Result_TIMEOUT;
+            break;
         }
         A7670C_NopDelay(0x3FFFFF);
     }
@@ -139,7 +137,7 @@ __A7670C__Boot:
         A7670C_NopDelay(0x3FFFFF);
     }
     
-    if(A7670C_PS_Flag==0){
+//    if(A7670C_PS_Flag==0){
         nRetry = 0;
         while(1){
             printf("A7670C PS service(CEREG)...");
@@ -153,11 +151,12 @@ __A7670C__Boot:
                 }
             }
             if(nRetry++==10){
-                return kA7670C_Result_TIMEOUT;
+                break;
+//                return kA7670C_Result_TIMEOUT;
             }
             A7670C_NopDelay(0x3FFFFF);
         }
-    }
+//    }
     
     nRetry = 0;
     while(1){
@@ -176,12 +175,66 @@ __A7670C__Boot:
         A7670C_NopDelay(0x3FFFFF);
     }
 
-//    while(1){
-//        if(A7670C_WaitPBDone(120000)==kA7670C_Result_OK){
-//            printf("PB DONE!!!\n");
-//            break;
-//        }
-//    }
+    nRetry = 0;
+    while(1){
+        A7670C_SIMEI_Read_Response SIMEI_Read_Response;
+        result = A7670C_SIMEI_Read(&SIMEI_Read_Response, 12000);
+
+        if(SIMEI_Read_Response.code == kA7670C_Response_Code_OK){
+            printf("IMEI: %s\n", SIMEI_Read_Response.value);
+            break;
+        }
+        if(nRetry++==10){
+            return kA7670C_Result_TIMEOUT;
+        }
+        A7670C_NopDelay(0x3FFFFF);
+    }
+
+    nRetry = 0;
+    while(1){
+        A7670C_ICCID_Read_Response ICCID_Read_Response;
+        result = A7670C_ICCID_Read(&ICCID_Read_Response, 12000);
+
+        if(ICCID_Read_Response.code == kA7670C_Response_Code_OK){
+            printf("CCID: %s\n", ICCID_Read_Response.ICCID);
+            break;
+        }
+        if(nRetry++==10){
+            return kA7670C_Result_TIMEOUT;
+        }
+        A7670C_NopDelay(0x3FFFFF);
+    }
+
+
+    nRetry = 0;
+    while(1){
+        A7670C_CNTP_Write_Response CNTP_Write_Response;
+        result = A7670C_CNTP_Write(&CNTP_Write_Response, "ntp.aliyun.com", 32, 12000);
+
+        if(CNTP_Write_Response.code == kA7670C_Response_Code_OK){
+            printf("CNTP Set To ntp.aliyun.com\n");
+            break;
+        }
+        if(nRetry++==10){
+            return kA7670C_Result_TIMEOUT;
+        }
+        A7670C_NopDelay(0x3FFFFF);
+    }
+
+
+    nRetry = 0;
+    while(1){
+        A7670C_CNTP_Exec_Response CNTP_Exec_Response;
+        result = A7670C_CNTP_Exec(&CNTP_Exec_Response, 12000);
+        if(CNTP_Exec_Response.code == kA7670C_Response_Code_OK){
+            printf("CNTP_Exec Done!\n");
+            break;
+        }
+        if(nRetry++==10){
+            return kA7670C_Result_TIMEOUT;
+        }
+        A7670C_NopDelay(0x3FFFFF);
+    }
 
     return kA7670C_Result_OK;
     

@@ -6,6 +6,7 @@
 #include <IM1253E.h>
 #include <sdk_ring.h>
 #include <sdk_fmt.h>
+#include <cpu_spinlock.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -24,7 +25,7 @@
 #define RING_BLOCK_SIZE (OBJECT_COUNT * OBJECT_SIZE)
 
 #define CALCULATE_THREAD_STACK 1024
-#define CALCULATE_THREAD_PRIORITY 20
+#define CALCULATE_THREAD_PRIORITY 22
 #define CALCULATE_THREAD_TIMESLICE 10
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +39,7 @@ static os_bool_t Voltage_ThreadFlag = OS_FALSE;
 static uint8_t EnergyMeter__DataBlock[RING_BLOCK_SIZE];
 
 static volatile uint32_t EnergyMeter__Voltage=0;
-static sdk_ring_t EnergyMeter__Ring;
+static sdk_ring_t EnergyMeter__DataRing;
 
 __ALIGNED(OS_ALIGN_SIZE)
 static uint8_t Calculate_ThreadStack[CALCULATE_THREAD_STACK];
@@ -46,42 +47,33 @@ static os_thread_t Calculate_Thread;
 
 static sdk_ap_t Calculate__PowerMs=0;
 static sdk_ap_t Calculate__EnergyWMs=0;
-static os_sem_t Calculate__Sem;
-static os_mutex_t EnergyMeter__Mutex;
+//static os_sem_t Calculate__Sem;
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 /*
  1078 ms - 110条数据，平均 10ms/1条 数据
  */
+static void CurrentSensor__DataHandler(BSP_CAN2_Message * Message, void* userdata){
+    EnergyMeter_Data_T Data;
+    uint32_t TimeMS = BSP_TIM2_TickCount;
+    uint32_t Current = SDK_HEX_GET_UINT32_BE(Message->Data, 0) - 0x80000000 ;
 
-static uint32_t CurrentSensor__LatestTick=0;
-static void CurrentSensor__DataHandler(sdk_ring_t * ring, void* userdata){
-    os_size_t used = sdk_ring_used(ring);
-    for(os_size_t i=0; i<used; i++){
-        CanRxMessage * Message = sdk_ring_pop(ring);
-        uint32_t Current = SDK_HEX_GET_UINT32_BE(Message->Data, 0) - 0x80000000 ;
-        
-        if(CurrentSensor__LatestTick==0 || CurrentSensor__LatestTick!=BSP_TIM2_TickCount){
-        
-        }
-        
-        os_mutex_lock(&EnergyMeter__Mutex);
-        EnergyMeter_Data_T* Data = sdk_ring_get_write_slot(&EnergyMeter__Ring);
-        os_mutex_unlock(&EnergyMeter__Mutex);
-        if(Data!=0){
-            Data->Current = Current;
-            Data->Voltage = EnergyMeter__Voltage;
-            Data->TimeMS = BSP_TIM2_TickCount;
-        }
-        CurrentSensor__LatestTick = BSP_TIM2_TickCount;
-    }
-//    os_sem_release(&Calculate__Sem);
+    Data.Current = Current;
+    Data.Voltage = EnergyMeter__Voltage;
+    Data.TimeMS = TimeMS;
+    sdk_ring_put(&EnergyMeter__DataRing, &Data);
 }
 
+uint32_t Voltage__Latest=0;
 static void Voltage_ThreadEntry(void* p){
     Voltage_ThreadFlag = OS_TRUE;
     while(1){
         IM1253E_GetVoltage((uint32_t*)&EnergyMeter__Voltage, VOLTAGE_THREAD_TIME_MS);
+        if(Voltage__Latest!=EnergyMeter__Voltage){
+            Voltage__Latest = EnergyMeter__Voltage;
+            printf("Update Voltage: %d, Tick:%d\n", Voltage__Latest, BSP_TIM2_TickCount);
+        }
     }
 }
 
@@ -95,25 +87,20 @@ static void Calculate_ThreadEntry(void* p){
     sdk_ap_t V_Unit = sdk_ap_muli(C_Unit,  VOLTAGE_UNIT/10); /*Voltage: 0.0001*/
     sdk_ap_t T_Unit = sdk_ap_muli(V_Unit, HOUR_IN_MS);
 //    sdk_ap_t K_Unit = sdk_ap_muli(V_Unit, 1000);
+    int nCount = 0;
     
     BSP_CAN2_SetRxHandler(CurrentSensor__DataHandler, 0);
     printf("Calculate Thread Startup...\n");
     while(1){
 //        os_sem_take(&Calculate__Sem, OS_WAIT_INFINITY);
-        os_mutex_lock(&EnergyMeter__Mutex);
-        os_size_t used = sdk_ring_used(&EnergyMeter__Ring);
-        os_mutex_unlock(&EnergyMeter__Mutex);
-        
+        os_size_t used = sdk_ring_used(&EnergyMeter__DataRing);
         for(os_size_t i=0; i<used; i++){
-            
-            os_mutex_lock(&EnergyMeter__Mutex);
-            EnergyMeter_Data_T* Data = sdk_ring_pop(&EnergyMeter__Ring);
-            os_mutex_unlock(&EnergyMeter__Mutex);
-            
+            EnergyMeter_Data_T* Data = sdk_ring_pop(&EnergyMeter__DataRing);
+
             if(Data->Current==0 || Data->Voltage==0) {
                 continue;
             }
-            
+
             if(LatestData==0){
                 LatestData = Data;
             }else{
@@ -122,15 +109,19 @@ static void Calculate_ThreadEntry(void* p){
                 sdk_ap_t EnergyMS_p = sdk_ap_muli(PowerMS, DeltaMS);
                 sdk_ap_t EnergyWMs = sdk_ap_add(Calculate__EnergyWMs, EnergyMS_p);
                 sdk_ap_t EnergyWh = sdk_ap_div(EnergyWMs, T_Unit);
-                
-                sdk_fmt_print("Tick: %d, DeltaMS: %d, Current:%d, Voltage:%d, EnergyWMs: %E, EnergyWh: %E (0.0001) \n"
-                              , LatestData->TimeMS
-                              , DeltaMS
-                              , Data->Current
-                              , Data->Voltage
-                              , EnergyWMs
-                              , EnergyWh
-                              );
+
+                if(nCount++==1000){
+                    sdk_fmt_print("Tick: %d, DeltaMS: %d, Current:%d, Voltage:%d, EnergyWMs: %E, EnergyWh: %E (0.0001) \n"
+                            , LatestData->TimeMS
+                            , DeltaMS
+                            , Data->Current
+                            , Data->Voltage
+                            , EnergyWMs
+                            , EnergyWh
+                    );
+                    nCount=0;
+                }
+
 
                 sdk_ap_free(&EnergyWh);
                 sdk_ap_free(&EnergyMS_p);
@@ -153,13 +144,12 @@ void EnergyMeter_Init(void)
     
     Calculate__PowerMs = sdk_ap_new(0);
     Calculate__EnergyWMs = sdk_ap_new(0);
-    
-    os_mutex_init(&EnergyMeter__Mutex);
-    os_sem_init(&Calculate__Sem, "Cal_Sem", 0, OS_QUEUE_FIFO);
+
+//    os_sem_init(&Calculate__Sem, "Cal_Sem", 0, OS_QUEUE_FIFO);
     
     // TODO: 加载总电能值
     
-    sdk_ring_init(&EnergyMeter__Ring, EnergyMeter__DataBlock, OBJECT_COUNT, OBJECT_SIZE);
+    sdk_ring_init(&EnergyMeter__DataRing, EnergyMeter__DataBlock, OBJECT_COUNT, OBJECT_SIZE);
     
     os_thread_init(&Voltage_Thread, "Vol_Thread"
                    , Voltage_ThreadEntry, 0

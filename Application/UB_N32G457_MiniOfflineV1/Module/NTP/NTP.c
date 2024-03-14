@@ -15,17 +15,8 @@ static uint8_t NTP__Thread_Stack[NTP_THREAD_STACK_SIZE];
 static os_thread_t NTP__Thread;
 
 static void NTP__Thread_Entry(void* p){
-    
-    A7670C_CNTP_Write_Response CNTP_Write_Response;
-    do {
-        A7670C_CNTP_Write(&CNTP_Write_Response, "ntp.aliyun.com", 32, 12000);
-    }while(CNTP_Write_Response.code!=kA7670C_Response_Code_OK);
-    
     while(1){
-        uint32_t start = BSP_TIM2_GetTickCount();
         NTP_Sync();
-        uint32_t end = BSP_TIM2_GetTickCount();
-        printf("end:%d, start:%d, delta=%d\n", end, start, BSP_TIM2_TickDiff(start, end));
         os_thread_mdelay(NTP_SYNC_PERIOD_MS);
     }
 }
@@ -48,22 +39,26 @@ os_err_t NTP_Sync(void){
     A7670C_CNTP_Exec_Response CNTP_Exec_Response;
     A7670C_CCLK_Read_Response CCLK_Read_Response;
     A7670C_CCLK_DateTime CCLK_DateTime;
-    
-    A7670C_CNTP_Exec(&CNTP_Exec_Response, 12000);
+
+    A7670C_CNTP_Exec(&CNTP_Exec_Response, 3000);
     if(CNTP_Exec_Response.code!=kA7670C_Response_Code_OK){
-        printf("CNTP ERROR!!!\n");
         return OS_ERROR;
     }
-    
-    A7670C_CCLK_Read(&CCLK_Read_Response, 12000);
+
+    A7670C_CCLK_Read(&CCLK_Read_Response, 3000);
     if(CCLK_Read_Response.code!=kA7670C_Response_Code_OK){
-        printf("CCLK ERROR!!!\n");
         return OS_ERROR;
     }
-    
-    
+
     A7670C_CCLK_ToDateTime(&CCLK_DateTime, &CCLK_Read_Response);
-    
+    printf("A7670C_CCLK_ToDateTime: %04d-%02d-%02d %02d:%02d:%02d\n"
+           , CCLK_DateTime.year
+           , CCLK_DateTime.month
+           , CCLK_DateTime.day
+           , CCLK_DateTime.hour
+           , CCLK_DateTime.min
+           , CCLK_DateTime.sec);
+
     if(CCLK_DateTime.year==2070
        && CCLK_DateTime.month==1
        && CCLK_DateTime.day==1

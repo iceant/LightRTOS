@@ -34,6 +34,8 @@ void BSP_UART5_Init(void);
 
 void BSP_UART5_SetRxHandler(BSP_UART5_RxHandler rxHandler, void* userdata);
 
+void BSP_UART5_SetDefaultRxHandler(BSP_UART5_RxHandler rxHandler, void* userdata);
+
 os_err_t BSP_UART5_TimeWait(os_tick_t ticks);
 
 os_err_t BSP_UART5_Send(uint8_t * data, os_size_t size);

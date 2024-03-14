@@ -164,14 +164,14 @@ os_err_t os_timer_add(os_timer_node_t* node, os_timer_timeout timeout, void* use
 {
     os_list_t * wheel;
     
-    OS_LIST_REMOVE(&node->node);
-    node->timeout = timeout;
-    node->userdata = userdata;
-    node->flag = flag;
-    node->time = time;
-    
     cpu_spinlock_lock(&os_timer__spinlock);
     {
+        OS_LIST_REMOVE(&node->node);
+        node->timeout = timeout;
+        node->userdata = userdata;
+        node->flag = flag;
+        node->time = time;
+
         node->expires = os_timer__current_time + time;
         os_timer__find_wheel(node->expires, &wheel);
         os_timer__insert_by_expires(node, wheel);

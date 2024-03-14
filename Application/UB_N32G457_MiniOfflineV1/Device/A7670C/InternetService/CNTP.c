@@ -39,19 +39,17 @@ A7670C_Result A7670C_CNTP_Read(A7670C_CNTP_Read_Response *response, os_size_t ti
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t *buffer, void* ud){
+static A7670C_RxHandler_Result CNTP_Write_Handler(sdk_ringbuffer_t *buffer, void* ud){
     A7670C_CNTP_Write_Response* response = (A7670C_CNTP_Write_Response*)ud;
 
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1){
         response->code = kA7670C_Response_Code_OK;
-
         sdk_ringbuffer_reset(buffer);
         A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1){
-        assert(response);
         response->code = kA7670C_Response_Code_ERROR;
         sdk_ringbuffer_reset(buffer);
         A7670C_Notify();
@@ -64,28 +62,32 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t *buffer, void* ud)
 A7670C_Result A7670C_CNTP_Write(A7670C_CNTP_Write_Response *response, const char* host, int8_t timezone, os_size_t timeout_ms)
 {
     response->code = kA7670C_Response_Code_ERROR;
-    return A7670C_RequestWithArgs(Write_Handler, response, os_tick_from_millisecond(timeout_ms), "AT+CNTP=\"%s\",%d\r\n", host, timezone);
+    return A7670C_RequestWithArgs(CNTP_Write_Handler, response, os_tick_from_millisecond(timeout_ms), "AT+CNTP=\"%s\",%d\r\n", host, timezone);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-static A7670C_RxHandler_Result Exec_Handler(sdk_ringbuffer_t * buffer, void* ud)
+static A7670C_RxHandler_Result CNTP_Exec_Handler(sdk_ringbuffer_t * buffer, void* ud)
 {
     A7670C_CNTP_Exec_Response* response = (A7670C_CNTP_Exec_Response*)ud;
-    if(sdk_ringbuffer_find_str(buffer, 0, "+CNTP: ")!=-1 /*接收结束: 正确*/){
-//        printf("CNTP EXEC: %s\n", buffer->buffer);
-        sdk_ringbuffer_text_t err_code_text;
-        int res = sdk_ringbuffer_cut(&err_code_text, buffer, 0, sdk_ringbuffer_used(buffer), "+CNTP: ", "\r\n");
+    int pos =sdk_ringbuffer_find_str(buffer, 0, "+CNTP:");
+    if(pos!=-1 /*接收结束: 正确*/){
+        if(sdk_ringbuffer_find_str(buffer, pos+1, "\r\n")!=-1){
+//            sdk_hex_dump("CNTP_Exec", buffer->buffer, sdk_ringbuffer_used(buffer));
+            sdk_ringbuffer_text_t err_code_text;
+            int res = sdk_ringbuffer_cut(&err_code_text, buffer, 0, sdk_ringbuffer_used(buffer), "+CNTP: ", "\r\n");
 
-        if(res==0){
-            response->code = kA7670C_Response_Code_OK;
-            response->err_code = sdk_ringbuffer_strtoul(buffer, err_code_text.start, 0, 0);
+            if(res==0){
+                response->code = kA7670C_Response_Code_OK;
+                response->err_code = sdk_ringbuffer_strtoul(buffer, err_code_text.start, 0, 10);
+            }
+
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
+            return kA7670C_RxHandler_Result_DONE;
         }
-
-        sdk_ringbuffer_reset(buffer);
-        A7670C_Notify();
-        return kA7670C_RxHandler_Result_DONE;
+        return kA7670C_RxHandler_Result_CONTINUE;
     }
 
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1 /*接收结束: 错误*/){
@@ -102,7 +104,7 @@ static A7670C_RxHandler_Result Exec_Handler(sdk_ringbuffer_t * buffer, void* ud)
 A7670C_Result A7670C_CNTP_Exec(A7670C_CNTP_Exec_Response* result, uint32_t timeout_ms)
 {
     result->err_code=-1;
-    return A7670C_RequestWithCmd(Exec_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CNTP\r\n");
+    return A7670C_RequestWithCmd(CNTP_Exec_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CNTP\r\n");
 }
 
 
