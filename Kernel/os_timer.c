@@ -26,12 +26,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 ////
 static cpu_spinlock_t os_timer__spinlock={.atomic.counter=0};
-static volatile os_time_t os_timer__current_time;
-static os_list_t os_timer__wheel0[OS_TIMER_WHEEL0_SIZE];    /* 0x00000000 ~ 0x000000FF */
-static os_list_t os_timer__wheel1[OS_TIMER_WHEELx_SIZE];    /* 0x00000100 ~ 0x00003FFF */
-static os_list_t os_timer__wheel2[OS_TIMER_WHEELx_SIZE];    /* 0x00004000 ~ 0x000FFFFF */
-static os_list_t os_timer__wheel3[OS_TIMER_WHEELx_SIZE];    /* 0x00100000 ~ 0x03FFFFFF */
-static os_list_t os_timer__wheel4[OS_TIMER_WHEELx_SIZE];    /* 0x04000000 ~ 0xFFFFFFFF */
+static volatile os_time_t os_timer__current_time=0;
+static os_list_t os_timer__wheel0[OS_TIMER_WHEEL0_SIZE]={0};    /* 0x00000000 ~ 0x000000FF */
+static os_list_t os_timer__wheel1[OS_TIMER_WHEELx_SIZE]={0};    /* 0x00000100 ~ 0x00003FFF */
+static os_list_t os_timer__wheel2[OS_TIMER_WHEELx_SIZE]={0};    /* 0x00004000 ~ 0x000FFFFF */
+static os_list_t os_timer__wheel3[OS_TIMER_WHEELx_SIZE]={0};    /* 0x00100000 ~ 0x03FFFFFF */
+static os_list_t os_timer__wheel4[OS_TIMER_WHEELx_SIZE]={0};    /* 0x04000000 ~ 0xFFFFFFFF */
 
 ////////////////////////////////////////////////////////////////////////////////
 ////

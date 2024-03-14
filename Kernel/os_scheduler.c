@@ -18,7 +18,7 @@ static cpu_spinlock_t os_scheduler__tick_lock={.atomic.counter =0};
 static cpu_spinlock_t os_scheduler__lock={.atomic.counter = 0};
 static volatile os_tick_t os_scheduler__tick_count=0;
 static volatile os_thread_t* os_scheduler__current_thread=0;
-static os_list_t os_scheduler__ready_table[OS_PRIORITY_MAX];
+static os_list_t os_scheduler__ready_table[OS_PRIORITY_MAX]={0};
 static volatile os_bool_t os_scheduler__init_flag = OS_FALSE;
 static volatile int os_scheduler__ctrl_flag = 0;
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,10 +65,11 @@ static os_err_t os_scheduler__ready_table_next(os_thread_t** thread){
     os_list_node_t * head;
     os_list_node_t * node;
 
-
     priority = os_priority_get_highest();
     if(priority==0 || priority>=OS_PRIORITY_MAX){
-        *thread = NULL;
+        if(thread){
+            *thread = NULL;
+        }
         return OS_EEMPTY;
     }
     assert(priority>0 && priority<OS_PRIORITY_MAX);
@@ -81,7 +82,9 @@ static os_err_t os_scheduler__ready_table_next(os_thread_t** thread){
         os_priority_unmark(priority);
     }
 
-    *thread = OS_CONTAINER_OF(node, os_thread_t, ready_node);
+    if(thread){
+        *thread = OS_CONTAINER_OF(node, os_thread_t, ready_node);
+    }
 
     return OS_EOK;
 }
@@ -132,14 +135,7 @@ os_err_t os_scheduler_schedule(void)
     register volatile void** curr_stack_p = 0;
     register volatile void** next_stack_p = 0;
 
-    if(os_scheduler__ctrl_flag==OS_SCHEDULER_CTRL_STOP){
-        return OS_ESTOP;
-    }
-
     OS_SCHEDULER_LOCK();
-    if(os_scheduler__ctrl_flag==OS_SCHEDULER_CTRL_STOP){
-        return OS_ESTOP;
-    }
 
     curr_thread = os_scheduler__current_thread;
     
