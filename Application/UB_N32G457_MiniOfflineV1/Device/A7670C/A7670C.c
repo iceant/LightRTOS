@@ -98,7 +98,7 @@ __A7670C__Boot:
         A7670C_NopDelay(0x3FFFFF);
     }
 
-#if 1
+#if 0
     nRetry = 0;
     while(1){
         printf("A7670C CS service(CREG)...");
@@ -174,6 +174,24 @@ __A7670C__Boot:
         }
         A7670C_NopDelay(0x3FFFFF);
     }
+
+
+    nRetry = 0;
+    while(1){
+        printf("A7670C CGATT...");
+        A7670C_CGACT_Read_Response CGACT_Read_Response;
+        result = A7670C_CGACT_Read(&CGACT_Read_Response, 12000);
+        if(CGACT_Read_Response.code == kA7670C_Response_Code_OK){
+            printf("CGACT Record Count: %d\n", CGACT_Read_Response.record_count);
+            break;
+        }
+        if(nRetry++==10){
+            return kA7670C_Result_TIMEOUT;
+        }
+        A7670C_NopDelay(0x3FFFFF);
+    }
+
+
 
     nRetry = 0;
     while(1){

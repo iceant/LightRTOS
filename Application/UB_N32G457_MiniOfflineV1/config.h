@@ -7,7 +7,7 @@
 #define RTC_ENABLE
 #define MS_TIME_ENABLE
 
-#define CONFIG_MQTT_SERVER 		"tcp://120.79.137.183:11883"
+#define CONFIG_MQTT_SERVER 		"tcp://ubattery.cn:11883"
 #define CONFIG_MQTT_USERNAME 	"guest"
 #define CONFIG_MQTT_PASSWORD    "guest"
 
