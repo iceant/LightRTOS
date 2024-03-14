@@ -1,5 +1,6 @@
 #include <CMQTTPAYLOAD.h>
 #include <stdlib.h>
+#include <sdk_hex.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -39,6 +40,7 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t * buffer, void* ud
     A7670C_CMQTTPAYLOAD_Write_Request* result = (A7670C_CMQTTPAYLOAD_Write_Request*)ud;
     
     if(sdk_ringbuffer_find_str(buffer, 0, ">\r\n")!=-1 /*接收结束: 成功*/ && result->send_flag==false){
+//        sdk_ringbuffer_reset(buffer);
         A7670C_Send((uint8_t*)result->data, result->data_size);
         result->send_flag = true;
         return kA7670C_RxHandler_Result_CONTINUE;
@@ -53,6 +55,7 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t * buffer, void* ud
     }
     
     if(sdk_ringbuffer_find_str(buffer, 0, "ERROR\r\n")!=-1 /*接收结束: 错误*/){
+        sdk_hex_dump("CMQTTPAYLOAD", buffer->buffer, sdk_ringbuffer_used(buffer));
         result->response->code=kA7670C_Response_Code_ERROR;
         
         sdk_ringbuffer_text_t find_text;
@@ -80,8 +83,10 @@ A7670C_Result A7670C_CMQTTPAYLOAD_Write(A7670C_CMQTTPAYLOAD_Write_Response* resu
         , int data_size
         , uint32_t timeout_ms)
 {
+    result->code = kA7670C_Response_Code_ERROR;
     result->err_code = -1;
     A7670C_CMQTTPAYLOAD_Write_Request request={.response=result, .data = data, .data_size=data_size, .send_flag = false};
+    sdk_hex_dump("CMQTTPAYLOAD_PARAM", data, data_size);
     A7670C_Result err = A7670C_RequestWithArgs(Write_Handler, &request, os_tick_from_millisecond(timeout_ms), "AT+CMQTTPAYLOAD=%d,%d\r\n"
             , client_index
             , data_size);

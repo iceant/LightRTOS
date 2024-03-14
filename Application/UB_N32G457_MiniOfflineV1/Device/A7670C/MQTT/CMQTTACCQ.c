@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <sdk_hex.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -39,6 +40,7 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t * buffer, void* ud)
         result->code = kA7670C_Response_Code_OK;
         int find = sdk_ringbuffer_cut(&find_result, buffer, 0, sdk_ringbuffer_used(buffer), "+CMQTTACCQ: ", "\r\n");
         if(find==0){
+//            sdk_hex_dump("CMQTTACCQ", buffer->buffer, sdk_ringbuffer_used(buffer));
             sdk_ringbuffer_iter_t iter;
             sdk_ringbuffer_iter_init(&iter, &find_result);
 //            printf("CMQTTACCQ: \n");
@@ -110,6 +112,7 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t * buffer, void* ud
     A7670C_CMQTTACCQ_Write_Response* result = (A7670C_CMQTTACCQ_Write_Response*)ud;
 
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1 /*接收结束: 成功*/){
+//        sdk_hex_dump("CMQTTACCQ WRITE", buffer->buffer, sdk_ringbuffer_used(buffer));
         result->code = kA7670C_Response_Code_OK;
         result->err_code = 0;
         sdk_ringbuffer_reset(buffer);
@@ -145,6 +148,7 @@ A7670C_Result A7670C_CMQTTACCQ_Write(A7670C_CMQTTACCQ_Write_Response* result
         , uint32_t timeout_ms)
 {
     result->err_code=-1;
+    result->code = kA7670C_Response_Code_ERROR;
     A7670C_Result err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms), "AT+CMQTTACCQ=%d,\"%s\",%d\r\n"
                                                , client_index
                                                , client_id

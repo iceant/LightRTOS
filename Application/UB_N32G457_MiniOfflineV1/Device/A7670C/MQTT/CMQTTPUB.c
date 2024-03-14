@@ -75,6 +75,7 @@ A7670C_Result A7670C_CMQTTPUB_Write(A7670C_CMQTTPUB_Write_Response* result
 {
     A7670C_Result err=kA7670C_Result_ERROR;
     result->err_code = -1;
+    result->code = kA7670C_Response_Code_ERROR;
     if(dup==kA7670C_Bool_Unspecified && retained==kA7670C_Bool_Unspecified){
         err = A7670C_RequestWithArgs(Write_Handler, result, os_tick_from_millisecond(timeout_ms)
                 , "AT+CMQTTPUB=%d,%d,%d\r\n"

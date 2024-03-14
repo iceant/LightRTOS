@@ -143,11 +143,11 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t *buffer, void* ud)
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1 /*接收结束*/){
         result->code=kA7670C_Response_Code_OK;
 
-        int find = sdk_ringbuffer_cut(&find_result, buffer, 0, sdk_ringbuffer_used(buffer), "AT+CMQTTPUB=", "\r\n");
+        int find = sdk_ringbuffer_cut(&find_result, buffer, 0, sdk_ringbuffer_used(buffer), "+CMQTTCONNECT: ", "\r\n");
         if(find==0){
             handle_record(&find_result, 0, result);
             
-            find = sdk_ringbuffer_cut(&find_result, buffer, find_result.end, sdk_ringbuffer_used(buffer), "+CMQTTSSLCFG: ", "\r\n");
+            find = sdk_ringbuffer_cut(&find_result, buffer, find_result.end, sdk_ringbuffer_used(buffer), "+CMQTTCONNECT: ", "\r\n");
             if(find==0){
                 handle_record(&find_result, 1, result);
             }
@@ -192,6 +192,7 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t * buffer, void* ud
         result->err_code = sdk_ringbuffer_iter_strtoul(&iter, 0);
         if(result->err_code==0){
             printf("Write_Handler: 1\n");
+//            sdk_hex_dump("CMQTTCONNECT", buffer->buffer, sdk_ringbuffer_used(buffer));
             /*
              OK
              
@@ -263,6 +264,7 @@ A7670C_Result A7670C_CMQTTCONNECT_Write(A7670C_CMQTTCONNECT_Write_Response* resu
     assert(result);
     assert(client_index>=0);
     assert(server_addr);
+    assert(keepalive_time>=1 && keepalive_time<=64800);
 
     int username_size = strlen(username);
     int password_size = strlen(password);

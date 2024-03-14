@@ -58,7 +58,7 @@ static void MQTT__OnConnectLost(void){
         result = A7670C_MQTT_Connect(&session
                 , BSP_CPUID_GetUIDStr()
                 , CONFIG_MQTT_SERVER
-                ,  68400
+                ,  64800
                 , true
                 , CONFIG_MQTT_USERNAME
                 , CONFIG_MQTT_PASSWORD);
@@ -98,6 +98,7 @@ static void MQTT__TxThreadEntry(void* p){
             task = sdk_ring_pop(&MQTT__TxTaskRing);
             if(task!=0){
                 printf("MQTT_TxThread Exec Publish...\n");
+                sdk_hex_dump("MQTT_TxThreadPub", task->buffer, task->size);
                 A7670C_Result result = A7670C_MQTT_Publish(&session, MQTT__Topic_Upstream
                                     , task->buffer, task->size
                                     , kA7670C_Qos_1
@@ -154,6 +155,7 @@ int MQTT_Publish(void* data, int size){
 
     if(task){
         memcpy(task->buffer, data, size);
+        task->size = size;
         os_sem_release(&MQTT_TxSem);
     }
 

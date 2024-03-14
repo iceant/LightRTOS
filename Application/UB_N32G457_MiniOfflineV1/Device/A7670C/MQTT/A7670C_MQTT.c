@@ -187,6 +187,7 @@ A7670C_Result A7670C_MQTT_Connect(
         }
         
         if(CMQTTSTART_Response.err_code>0){
+            printf("CMQTTSTART_Response %d, err=%d\n", result, CMQTTSTART_Response.err_code);
             /*-1: 表示已经打开过， 可以进行下一步*/
             return kA7670C_Result_ERROR;
         }

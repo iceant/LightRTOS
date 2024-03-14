@@ -42,18 +42,19 @@ static A7670C_RxHandler_Result Write_Handler(sdk_ringbuffer_t *buffer, void* ud)
     A7670C_CMQTTTOPIC_Write_Request* result = (A7670C_CMQTTTOPIC_Write_Request*)ud;
 
     if(sdk_ringbuffer_find_str(buffer, 0, ">\r\n")!=-1 /*可以发送 topic 了*/ && (result->send_flag==false)){
-        int send_bytes = A7670C_Send(result->topic, result->topic_length);
-        if(send_bytes!=result->topic_length){
-            result->response->code = kA7670C_Response_Code_ERROR; /*错误：串口通讯失败*/
-            sdk_ringbuffer_reset(buffer);
-            A7670C_Notify();
-            return kA7670C_RxHandler_Result_RESET;
-        }
+        A7670C_Send((uint8_t*)result->topic, result->topic_length);
+//        if(send_bytes!=result->topic_length){
+//            result->response->code = kA7670C_Response_Code_ERROR; /*错误：串口通讯失败*/
+//            sdk_ringbuffer_reset(buffer);
+//            A7670C_Notify();
+//            return kA7670C_RxHandler_Result_RESET;
+//        }
         result->send_flag = true;
         return kA7670C_RxHandler_Result_CONTINUE; /*重置buffer，等待返回*/
     }
     
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1 /*接收结束: 发送成功*/){
+        result->response->code = kA7670C_Response_Code_OK;
         sdk_ringbuffer_reset(buffer);
         A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
@@ -88,6 +89,7 @@ A7670C_Result A7670C_CMQTTTOPIC_Write(A7670C_CMQTTTOPIC_Write_Response* result
 {
     int topic_length = strlen(topic);
     result->err_code = -1;
+    result->code = kA7670C_Response_Code_ERROR;
     A7670C_CMQTTTOPIC_Write_Request request={.topic = topic, .topic_length = topic_length, .response = result, .send_flag=false};
     A7670C_Result err = A7670C_RequestWithArgs(Write_Handler, &request, os_tick_from_millisecond(timeout_ms), "AT+CMQTTTOPIC=%d,%d\r\n"
             , client_index
