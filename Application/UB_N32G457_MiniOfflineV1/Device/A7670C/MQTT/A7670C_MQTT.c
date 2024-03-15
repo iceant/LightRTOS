@@ -504,49 +504,64 @@ A7670C_Result A7670C_MQTT_Publish(
 ){
     A7670C_Result result = kA7670C_Result_ERROR;
     int err_code = 0;
-
+    int nRetry = 3;
+    
     if(session->state>=kA7670C_MQTT_State_CONNECT && session->state<kA7670C_MQTT_State_DISC){
-        A7670C_CMQTTTOPIC_Write_Response CMQTTTOPIC_Write_Response;
-        result = A7670C_CMQTTTOPIC_Write(&CMQTTTOPIC_Write_Response, session->client_index, topic, 12000);
-        if(CMQTTTOPIC_Write_Response.code!=kA7670C_Response_Code_OK){
-            printf("[MQTT] ERR - CMQTTTOPIC_Write_Response code=%d\n", CMQTTTOPIC_Write_Response.code);
-            return kA7670C_Result_ERROR;
-        }
-
-        if (CMQTTTOPIC_Write_Response.err_code > 0) {
-            printf("[MQTT] ERR - CMQTTTOPIC_Write_Response err=%d\n", CMQTTTOPIC_Write_Response.err_code);
-            err_code = CMQTTTOPIC_Write_Response.err_code;
-            result = kA7670C_Result_ERROR;
-            goto __error;
-        }
         
+        while(1){
+            A7670C_CMQTTTOPIC_Write_Response CMQTTTOPIC_Write_Response;
+            result = A7670C_CMQTTTOPIC_Write(&CMQTTTOPIC_Write_Response, session->client_index, topic, 12000);
+            if(CMQTTTOPIC_Write_Response.code==kA7670C_Response_Code_OK){
+                break;
+            }
+            
+            printf("[MQTT] ERR - CMQTTTOPIC_Write_Response code=%d, err=%d\n"
+                    , CMQTTTOPIC_Write_Response.code
+                    , CMQTTTOPIC_Write_Response.err_code);
+            
+            nRetry--;
+            if(nRetry == 0){
+                result = kA7670C_Result_ERROR;
+                goto __error;
+            }
+        }
         session->state = kA7670C_MQTT_State_TOPIC;
         
-        A7670C_CMQTTPAYLOAD_Write_Response CMQTTPAYLOAD_Write_Response;
-        result = A7670C_CMQTTPAYLOAD_Write(&CMQTTPAYLOAD_Write_Response, session->client_index, data, data_size, 12000);
-        if(CMQTTPAYLOAD_Write_Response.code!=kA7670C_Response_Code_OK){
-            printf("[MQTT] ERR - CMQTTPAYLOAD_Write_Response code=%d\n", CMQTTPAYLOAD_Write_Response.code);
-            return kA7670C_Result_ERROR;
-        }
-        if (CMQTTPAYLOAD_Write_Response.err_code > 0) {
-            printf("[MQTT] ERR - CMQTTPAYLOAD_Write_Response err=%d\n", CMQTTPAYLOAD_Write_Response.err_code);
-            err_code = CMQTTPAYLOAD_Write_Response.err_code;
-            result = kA7670C_Result_ERROR;
-            goto __error;
+        nRetry = 3;
+        while(1){
+            A7670C_CMQTTPAYLOAD_Write_Response CMQTTPAYLOAD_Write_Response;
+            result = A7670C_CMQTTPAYLOAD_Write(&CMQTTPAYLOAD_Write_Response, session->client_index, data, data_size, 12000);
+            if(CMQTTPAYLOAD_Write_Response.code==kA7670C_Response_Code_OK){
+                break;
+            }
+            
+            printf("[MQTT] ERR - CMQTTPAYLOAD_Write_Response code=%d, err=%d\n"
+                   , CMQTTPAYLOAD_Write_Response.code
+                   , CMQTTPAYLOAD_Write_Response.err_code);
+            
+            if(nRetry-- == 0){
+                result = kA7670C_Result_ERROR;
+                goto __error;
+            }
         }
         session->state = kA7670C_MQTT_State_PAYLOAD;
         
-        A7670C_CMQTTPUB_Write_Response CMQTTPUB_Write_Response;
-        result = A7670C_CMQTTPUB_Write(&CMQTTPUB_Write_Response, session->client_index, qos, pub_timeout, retained, dup, 12000);
-        if(CMQTTPUB_Write_Response.code!=kA7670C_Response_Code_OK){
-            printf("[MQTT] ERR - CMQTTPUB_Write_Response code=%d\n", CMQTTPUB_Write_Response.code);
-            return kA7670C_Result_ERROR;
-        }
-        if (CMQTTPUB_Write_Response.err_code > 0) {
-            printf("[MQTT] ERR - CMQTTPUB_Write_Response err=%d\n", CMQTTPUB_Write_Response.err_code);
-            err_code = CMQTTPUB_Write_Response.err_code;
-            result = kA7670C_Result_ERROR;
-            goto __error;
+        nRetry = 3;
+        while(1){
+            A7670C_CMQTTPUB_Write_Response CMQTTPUB_Write_Response;
+            result = A7670C_CMQTTPUB_Write(&CMQTTPUB_Write_Response, session->client_index, qos, pub_timeout, retained, dup, 12000);
+            if(CMQTTPUB_Write_Response.code==kA7670C_Response_Code_OK){
+                break;
+            }
+            printf("[MQTT] ERR - CMQTTPUB_Write_Response code=%d, err=%d\n"
+                   , CMQTTPUB_Write_Response.code
+                   , CMQTTPUB_Write_Response.err_code
+                   );
+            
+            if(nRetry-- == 0){
+                result= kA7670C_Result_ERROR;
+                goto __error;
+            }
         }
         session->state = kA7670C_MQTT_State_PUB;
         
