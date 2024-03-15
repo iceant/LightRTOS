@@ -154,10 +154,11 @@ void KEY_INPUT_IRQHandler(void)
 {
     if (RESET != EXTI_GetITStatus(KEY_INPUT_EXTI_LINE))
     {
+        EXTI_ClrITPendBit(KEY_INPUT_EXTI_LINE);
+        
         if(BSP_Key_ThreadFlag){
             os_sem_release(&BSP_Key__Sem);
         }
-        EXTI_ClrITPendBit(KEY_INPUT_EXTI_LINE);
     }
 }
 

@@ -85,7 +85,7 @@ void BSP_UART5_Init(void){
     bsp_uart5__rx_handler.rx_handler = 0;
     bsp_uart5__rx_handler.userdata = 0;
     os_sem_init(&bsp_uart5__rx_handler.lock, "UART5_WaitSem", 0, OS_QUEUE_FIFO);
-
+    UART5__ThreadFlag = OS_FALSE;
     sdk_ringbuffer_init(&UART5_RxBuffer, UART5_RxBlock, sizeof(UART5_RxBlock));
     os_sem_init(&UART5_RxSem, "UART5_RxSem", 0, OS_QUEUE_FIFO);
 

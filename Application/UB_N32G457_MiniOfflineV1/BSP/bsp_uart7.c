@@ -78,7 +78,9 @@ void UART7_IRQHandler(void){
 ////
 
 void BSP_UART7_Init(void){
-
+    
+    UART7_RxThreadFlag = OS_FALSE;
+    
     bsp_uart7__rx_handler.rx_handler = 0;
     bsp_uart7__rx_handler.userdata = 0;
     os_sem_init(&bsp_uart7__rx_handler.lock, "UART7_WaitSem", 0, OS_QUEUE_FIFO);
@@ -104,8 +106,10 @@ void BSP_UART7_SetRxHandler(BSP_UART7_RxHandler rxHandler, void* userdata)
     #if defined(BSP_UART7_DEBUG_ENABLE)
     printf("BSP_UART7_SetRxHandler: %x, %x\n", rxHandler, userdata);
     #endif
+    USART_ConfigInt(UART7, USART_INT_RXDNE, DISABLE);
     bsp_uart7__rx_handler.rx_handler = rxHandler;
     bsp_uart7__rx_handler.userdata = userdata;
+    USART_ConfigInt(UART7, USART_INT_RXDNE, DISABLE);
 }
 
 os_err_t BSP_UART7_Send(uint8_t * data, os_size_t size)
@@ -117,8 +121,8 @@ os_err_t BSP_UART7_Send(uint8_t * data, os_size_t size)
 #endif
     
     sdk_ringbuffer_reset(&UART7_RxBuffer);
-//    hw_usart_dma_send(BSP_UARTx, data, size);
-    hw_usart_send(BSP_UARTx, data, size);
+    hw_usart_dma_send(BSP_UARTx, data, size);
+//    hw_usart_send(BSP_UARTx, data, size);
 
     return OS_EOK;
 }

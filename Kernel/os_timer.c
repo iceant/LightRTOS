@@ -52,8 +52,8 @@ __STATIC_FORCEINLINE void os_timer__find_wheel(os_time_t expires, os_list_t** wh
 
 __STATIC_FORCEINLINE void os_timer__insert_by_expires(os_timer_node_t* timer, os_list_t * wheel)
 {
-    os_list_node_t * node;
-    os_timer_node_t* p;
+    os_list_node_t * node=0;
+    os_timer_node_t* p=0;
     
     if(OS_LIST_IS_EMPTY(wheel)){
         OS_LIST_INSERT_AFTER(wheel, &timer->node);
@@ -72,7 +72,7 @@ __STATIC_FORCEINLINE void os_timer__insert_by_expires(os_timer_node_t* timer, os
 }
 
 static os_err_t os_timer__insert_no_lock(os_timer_node_t* node){
-    os_list_t * wheel;
+    os_list_t * wheel=0;
     
     OS_LIST_INIT(&node->node);
     node->expires = os_timer__current_time + node->time;
@@ -110,10 +110,10 @@ os_err_t os_timer_init(void){
 }
 
 os_bool_t os_timer_tick(void){
-    os_list_t *wheel;
-    os_list_node_t * node;
-    os_time_t time;
-    os_timer_node_t * timer_node;
+    os_list_t *wheel = 0;
+    os_list_node_t * node = 0;
+    os_time_t time = 0;
+    os_timer_node_t * timer_node = 0;
     os_bool_t need_schedule_flag = OS_FALSE;
     
     cpu_spinlock_lock(&os_timer__spinlock);
@@ -144,12 +144,12 @@ os_bool_t os_timer_tick(void){
 
 os_err_t os_timer_insert(os_timer_node_t* node)
 {
-    os_list_t * wheel;
-    
-    OS_LIST_INIT(&node->node);
+    os_list_t * wheel = 0;
     
     cpu_spinlock_lock(&os_timer__spinlock);
     {
+        OS_LIST_INIT(&node->node);
+        
         node->expires = os_timer__current_time + node->time;
         os_timer__find_wheel(node->expires, &wheel);
         os_timer__insert_by_expires(node, wheel);
@@ -162,7 +162,7 @@ os_err_t os_timer_insert(os_timer_node_t* node)
 
 os_err_t os_timer_add(os_timer_node_t* node, os_timer_timeout timeout, void* userdata, os_time_t time, int flag)
 {
-    os_list_t * wheel;
+    os_list_t * wheel = 0;
     
     cpu_spinlock_lock(&os_timer__spinlock);
     {
