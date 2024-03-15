@@ -36,4 +36,6 @@ os_err_t BSP_USART1_TimeWait(os_time_t timeout_ms);
 
 os_err_t BSP_USART1_Send(uint8_t * data, os_size_t size);
 
+void BSP_USART1_Notify(void);
+
 #endif /*INCLUDED_BSP_USART1_H*/

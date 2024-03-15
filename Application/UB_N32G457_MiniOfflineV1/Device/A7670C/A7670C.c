@@ -30,8 +30,8 @@ A7670C_Result A7670C_AT(os_time_t timeout_ms){
 static A7670C_RxHandler_Result WaitPBDone_Handler(sdk_ringbuffer_t* buffer, void*ud){
     if(sdk_ringbuffer_find_str(buffer, 0, "PB DONE\r\n")!=-1){
         sdk_ringbuffer_reset(buffer);
-        return kA7670C_RxHandler_Result_DONE;
         A7670C_Notify();
+        return kA7670C_RxHandler_Result_DONE;
     }
     return kA7670C_RxHandler_Result_CONTINUE;
 }

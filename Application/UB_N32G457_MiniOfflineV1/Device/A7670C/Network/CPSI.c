@@ -77,6 +77,8 @@ static A7670C_RxHandler_Result Read_Handler(sdk_ringbuffer_t * buffer, void* ud)
             A7670C_Notify();
             return kA7670C_RxHandler_Result_DONE;
         }else{
+            sdk_ringbuffer_reset(buffer);
+            A7670C_Notify();
             return kA7670C_RxHandler_Result_RESET;
         }
     }
