@@ -180,12 +180,15 @@ os_err_t os_scheduler_schedule(void)
 
 os_err_t os_scheduler_push_back(os_thread_t* thread)
 {
+    if(!thread) return OS_EINVAL;
+    
     if(os_scheduler__init_flag!=OS_TRUE){
         os_scheduler_init();
     }
     
     OS_SCHEDULER_LOCK();
     {
+        OS_LIST_REMOVE(&thread->ready_node);
         OS_LIST_INSERT_BEFORE(&os_scheduler__ready_table[thread->current_priority], &thread->ready_node);
         thread->remain_ticks = thread->init_ticks;
         thread->state = OS_THREAD_STATE_READY;
@@ -198,8 +201,11 @@ os_err_t os_scheduler_push_back(os_thread_t* thread)
 
 os_err_t os_scheduler_push_front(os_thread_t* thread)
 {
+    if(!thread) return OS_EINVAL;
+    
     OS_SCHEDULER_LOCK();
     {
+        OS_LIST_REMOVE(&thread->ready_node);
         OS_LIST_INSERT_AFTER(&os_scheduler__ready_table[thread->current_priority], &thread->ready_node);
         thread->remain_ticks = thread->init_ticks;
         thread->state = OS_THREAD_STATE_READY;
