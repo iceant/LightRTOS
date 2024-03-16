@@ -69,7 +69,10 @@ uint32_t Voltage__Latest=0;
 static void Voltage_ThreadEntry(void* p){
     Voltage_ThreadFlag = OS_TRUE;
     while(1){
-        IM1253E_GetVoltage((uint32_t*)&EnergyMeter__Voltage, VOLTAGE_THREAD_TIME_MS);
+        os_err_t  err = IM1253E_GetVoltage((uint32_t*)&EnergyMeter__Voltage, VOLTAGE_THREAD_TIME_MS);
+        if(err!=OS_EOK){
+            continue;
+        }
         if(Voltage__Latest!=EnergyMeter__Voltage){
             Voltage__Latest = EnergyMeter__Voltage;
             printf("Update Voltage: %d, Tick:%d\n", Voltage__Latest, BSP_TIM2_TickCount);

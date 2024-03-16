@@ -289,7 +289,7 @@ void sdk_fmt_vfmt(int put(int c, void *cl), void *cl,
             int width = INT_MIN, precision = INT_MIN;
             memset(flags, '\0', sizeof flags);
             if (sdk_fmt_flags) {
-                unsigned char c = *fmt;
+                c = *fmt;
                 for ( ; c && strchr(sdk_fmt_flags, c); c = *++fmt) {
                     assert(flags[c] < 255);
                     flags[c]++;

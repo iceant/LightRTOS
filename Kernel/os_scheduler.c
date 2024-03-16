@@ -30,7 +30,7 @@ static volatile int os_scheduler__ctrl_flag = 0;
 ////
 
 static void os_scheduler__SysTickHandler(void){
-    register volatile os_thread_t * current_thread;
+    register volatile os_thread_t * current_thread = 0;
     register os_bool_t tick_schedule_flag = OS_FALSE;
     register os_bool_t timer_schedule_flag = OS_FALSE;
 
@@ -59,32 +59,30 @@ static void os_scheduler__SysTickHandler(void){
 ////////////////////////////////////////////////////////////////////////////////
 //// Ready Table
 /* Used in os_scheduler_schedule() ONLY! */
-static os_err_t os_scheduler__ready_table_next(os_thread_t** thread){
+__STATIC_FORCEINLINE os_err_t os_scheduler__ready_table_next(os_thread_t** thread){
     
-    os_priority_t priority;
-    os_list_node_t * head;
-    os_list_node_t * node;
+    os_priority_t priority = 0;
+    os_list_node_t * head = 0;
+    os_list_node_t * node = 0;
 
     priority = os_priority_get_highest();
     if(priority==0 || priority>=OS_PRIORITY_MAX){
-        if(thread){
-            *thread = NULL;
-        }
+        *thread = NULL;
         return OS_EEMPTY;
     }
     assert(priority>0 && priority<OS_PRIORITY_MAX);
 
     head = &os_scheduler__ready_table[priority];
     node = OS_LIST_NEXT(head);
-    OS_LIST_REMOVE(node);
+    if(node){
+        OS_LIST_REMOVE(node);
+    }
 
     if(OS_LIST_IS_EMPTY(head)){
         os_priority_unmark(priority);
     }
-
-    if(thread){
-        *thread = OS_CONTAINER_OF(node, os_thread_t, ready_node);
-    }
+    
+    *thread = OS_CONTAINER_OF(node, os_thread_t, ready_node);
 
     return OS_EOK;
 }
@@ -94,18 +92,16 @@ static os_err_t os_scheduler__ready_table_next(os_thread_t** thread){
 
 os_err_t os_scheduler_init(void){
     
-    cpu_spinlock_lock(&os_scheduler__lock);
-    
+    OS_SCHEDULER_LOCK();
     if(os_scheduler__init_flag==OS_TRUE){
-        cpu_spinlock_unlock(&os_scheduler__lock);
+        OS_SCHEDULER_UNLOCK();
         return OS_EOK;
     }
     
     os_scheduler__tick_count = 0;
     os_scheduler__current_thread = 0;
     
-    int i;
-    for(i=0; i<OS_PRIORITY_MAX; i++){
+    for(int i=0; i<OS_PRIORITY_MAX; i++){
         OS_LIST_INIT(&os_scheduler__ready_table[i]);
     }
     
@@ -116,7 +112,7 @@ os_err_t os_scheduler_init(void){
     cpu_tick_set(os_scheduler__SysTickHandler);
     
     os_scheduler__init_flag = OS_TRUE;
-    cpu_spinlock_unlock(&os_scheduler__lock);
+    OS_SCHEDULER_UNLOCK();
     
     return OS_EOK;
 }
@@ -130,8 +126,8 @@ void os_scheduler_ctrl(int ctrl_flag)
 
 os_err_t os_scheduler_schedule(void)
 {
-    register volatile os_thread_t * curr_thread;
-    os_thread_t * next_thread;
+    register volatile os_thread_t * curr_thread=0;
+    os_thread_t * next_thread=0;
     register volatile void** curr_stack_p = 0;
     register volatile void** next_stack_p = 0;
 
@@ -162,7 +158,7 @@ os_err_t os_scheduler_schedule(void)
         next_stack_p = (volatile void** )&next_thread->sp;
         if(curr_thread->state & OS_THREAD_STATE_YIELD){
             /* push back into priority table */
-            OS_LIST_INSERT_BEFORE(&os_scheduler__ready_table[curr_thread->current_priority], &curr_thread->ready_node);
+            OS_LIST_INSERT_BEFORE(&os_scheduler__ready_table[curr_thread->current_priority], (os_list_node_t*)&curr_thread->ready_node);
             curr_thread->remain_ticks = curr_thread->init_ticks;
             curr_thread->state = OS_THREAD_STATE_READY;
             os_priority_mark(curr_thread->current_priority);
@@ -184,12 +180,15 @@ os_err_t os_scheduler_schedule(void)
 
 os_err_t os_scheduler_push_back(os_thread_t* thread)
 {
+    if(!thread) return OS_EINVAL;
+    
     if(os_scheduler__init_flag!=OS_TRUE){
         os_scheduler_init();
     }
     
     OS_SCHEDULER_LOCK();
     {
+        OS_LIST_REMOVE(&thread->ready_node);
         OS_LIST_INSERT_BEFORE(&os_scheduler__ready_table[thread->current_priority], &thread->ready_node);
         thread->remain_ticks = thread->init_ticks;
         thread->state = OS_THREAD_STATE_READY;
@@ -202,8 +201,11 @@ os_err_t os_scheduler_push_back(os_thread_t* thread)
 
 os_err_t os_scheduler_push_front(os_thread_t* thread)
 {
+    if(!thread) return OS_EINVAL;
+    
     OS_SCHEDULER_LOCK();
     {
+        OS_LIST_REMOVE(&thread->ready_node);
         OS_LIST_INSERT_AFTER(&os_scheduler__ready_table[thread->current_priority], &thread->ready_node);
         thread->remain_ticks = thread->init_ticks;
         thread->state = OS_THREAD_STATE_READY;
@@ -224,11 +226,12 @@ os_err_t os_scheduler_remove(os_thread_t* thread)
 {
     assert(thread);
     
-    os_thread_t * curr_thread = thread;
-    os_list_node_t *head = &os_scheduler__ready_table[curr_thread->current_priority];
-    
     OS_SCHEDULER_LOCK();
     {
+        os_thread_t * curr_thread = thread;
+        
+        os_list_node_t *head = &os_scheduler__ready_table[curr_thread->current_priority];
+        
         OS_LIST_REMOVE(&curr_thread->ready_node);
         if(OS_LIST_IS_EMPTY(head)){
             os_priority_unmark(curr_thread->current_priority);

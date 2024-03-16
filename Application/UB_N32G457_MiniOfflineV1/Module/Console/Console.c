@@ -11,8 +11,9 @@ static int Console__RxHandler(sdk_ringbuffer_t* buffer, void* userdata){
         }
         
         sdk_ringbuffer_reset(buffer);
+        BSP_USART1_Notify();
     }
-    
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

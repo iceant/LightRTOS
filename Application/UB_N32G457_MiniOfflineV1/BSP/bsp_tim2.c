@@ -121,7 +121,7 @@ void BSP_TIM2_SetTimeUpHandler(BSP_TIM2_TimeUpHandler TimeUpHandler, void* userd
     TIM_ConfigInt(TIM2, TIM_INT_UPDATE, ENABLE);
 }
 
-volatile uint32_t BSP_TIM2_GetTickCount(void){
+uint32_t BSP_TIM2_GetTickCount(void){
     return BSP_TIM2_TickCount;
 }
 
@@ -133,6 +133,7 @@ void TIM2_IRQHandler(void)
     if (TIM_GetIntStatus(TIM2, TIM_INT_UPDATE) != RESET)
     {
         BSP_TIM2_TickCount++;
+        TIM_ClrIntPendingBit(TIM2, TIM_INT_UPDATE);
         
 #if defined(BSP_TIM2_USE_THREAD)
         if(BSP_TIM2__ThreadReadyFlag==OS_TRUE){
@@ -145,8 +146,7 @@ void TIM2_IRQHandler(void)
 
 #endif
         
-        TIM_ClrIntPendingBit(TIM2, TIM_INT_UPDATE);
-        
+
     }
 }
 

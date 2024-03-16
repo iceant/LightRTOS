@@ -36,7 +36,7 @@ static A7670C_RxHandler_Result SIMEI_Read_Handler(sdk_ringbuffer_t *buffer, void
         int find = sdk_ringbuffer_cut(&find_result, buffer, 0, sdk_ringbuffer_used(buffer), "+SIMEI: ", "\r\n");
         if(find==0){
             int size = find_result.end - find_result.start;
-            sdk_ringbuffer_memcpy(result->value, buffer, find_result.start, size);
+            sdk_ringbuffer_memcpy((uint8_t*)result->value, buffer, find_result.start, size);
             result->value[size] = '\0';
             sdk_ringbuffer_reset(buffer);
             A7670C_Notify();
@@ -69,6 +69,7 @@ static A7670C_RxHandler_Result SIMEI_Write_Handler(sdk_ringbuffer_t * buffer, vo
     if(sdk_ringbuffer_find_str(buffer, 0, "OK\r\n")!=-1 /*接收结束: 成功*/){
         *result = true;
         sdk_ringbuffer_reset(buffer);
+        A7670C_Notify();
         return kA7670C_RxHandler_Result_DONE;
     }
 

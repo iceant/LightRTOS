@@ -26,19 +26,20 @@ static os_thread_t USART1_RxThread;
 static uint8_t USART1_RxBlock[USART1_RX_BLOCK_SIZE];
 static sdk_ringbuffer_t USART1_RxBuffer;
 static BSP_USART1_RxHandler_Record bsp_usart1__rx_handler;
+static os_bool_t BSP_USART1__WaitFlag = OS_FALSE;
+
+////////////////////////////////////////////////////////////////////////////////
+////
 
 static void USART1_RxThreadEntry(void* p){
     while(1){
         os_sem_take(&USART1_RxSem, OS_WAIT_INFINITY);
         if(bsp_usart1__rx_handler.rx_handler){
-            int result = bsp_usart1__rx_handler.rx_handler(&USART1_RxBuffer, bsp_usart1__rx_handler.userdata);
-            if(result==BSP_USART1_RX_STATE_DONE || result==BSP_USART1_RX_STATE_RESET){
+            bsp_usart1__rx_handler.rx_handler(&USART1_RxBuffer, bsp_usart1__rx_handler.userdata);
+        }else{
+            if(sdk_ringbuffer_is_full(&USART1_RxBuffer)){
                 sdk_ringbuffer_reset(&USART1_RxBuffer);
-                os_sem_release(&bsp_usart1__rx_handler.lock);
             }
-        }
-        if(sdk_ringbuffer_is_full(&USART1_RxBuffer)){
-            sdk_ringbuffer_reset(&USART1_RxBuffer);
         }
     }
 }
@@ -76,8 +77,10 @@ void BSP_USART1_Init(void){
 
 void BSP_USART1_SetRxHandler(BSP_USART1_RxHandler rxHandler, void* userdata)
 {
+    USART_ConfigInt(USART1, USART_INT_RXDNE, DISABLE);
     bsp_usart1__rx_handler.rx_handler = rxHandler;
     bsp_usart1__rx_handler.userdata = userdata;
+    USART_ConfigInt(USART1, USART_INT_RXDNE, ENABLE);
 }
 
 os_err_t BSP_USART1_Send(uint8_t * data, os_size_t size)
@@ -88,5 +91,16 @@ os_err_t BSP_USART1_Send(uint8_t * data, os_size_t size)
 
 os_err_t BSP_USART1_TimeWait(os_time_t timeout_ms)
 {
-    return os_sem_take(&bsp_usart1__rx_handler.lock, os_tick_from_millisecond(timeout_ms));
+    os_err_t err;
+    BSP_USART1__WaitFlag = OS_TRUE;
+    err =  os_sem_take(&bsp_usart1__rx_handler.lock, os_tick_from_millisecond(timeout_ms));
+    BSP_USART1__WaitFlag = OS_FALSE;
+    return err;
+}
+
+void BSP_USART1_Notify(void)
+{
+    if(BSP_USART1__WaitFlag==OS_TRUE){
+        os_sem_release(&bsp_usart1__rx_handler.lock);
+    }
 }

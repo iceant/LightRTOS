@@ -19,7 +19,7 @@ static os_mutex_t SDT__Mutex;
 ////
 
 __STATIC_FORCEINLINE os_bool_t SDT__IsLeapYear(uint16_t year){
-    if(((year%4)==0) && ((year%100)!=0) || (year%400==0)){
+    if((((year%4)==0) && ((year%100)!=0)) || (year%400==0)){
         return OS_TRUE;
     }
     return OS_FALSE;

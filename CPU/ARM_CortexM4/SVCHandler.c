@@ -3,7 +3,7 @@
 #include <cpu_macros.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
-cpu_uintptr_t svc_exc_return = 0;
+volatile cpu_uintptr_t svc_exc_return = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -15,11 +15,11 @@ void SVC_Handler_C(unsigned  int * svc_args)
     switch (svc_number) {
         case 0:
             CPU_REG(SCB_ICSR) |= SCB_ICSR_PENDSVSET_Msk;
-            svc_exc_return = 0xFFFFFFFDU;
+//            svc_exc_return = 0xFFFFFFFDU;
             break;
         case 1:
             cpu_reboot();
-            svc_exc_return = 0xFFFFFFFDU;
+//            svc_exc_return = 0xFFFFFFFDU;
             break;
         default:
             printf("ERROR: Unknown SVC service number.\n");
