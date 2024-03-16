@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <sdk_hex.h>
 
-
 ////////////////////////////////////////////////////////////////////////////////
 ////
 static os_thread_t      CMQTTRX_DataHandle_Thread;
-static os_sem_t   CMQTTRX_DataHandle_Sem;
+static os_sem_t         CMQTTRX_DataHandle_Sem;
 static uint8_t          CMQTTRX_DataHandle_Thread_Stack[1024];
+
+////////////////////////////////////////////////////////////////////////////////
+////
 
 static void CMQTTRX_DataHandle_Thread_Entry(void* userdata){
     A7670C_MQTT_Session* session = userdata;
@@ -177,24 +179,31 @@ A7670C_Result A7670C_MQTT_Connect(
         , __OPTIONAL const char* password
 ){
     A7670C_Result result;
-    
+    int nRetry = 3;
+
     if(session->state == kA7670C_MQTT_State_IDLE || session->state==kA7670C_MQTT_State_STOP || session->state == kA7670C_MQTT_State_CONNLOST){
         /*第一次调用，启动*/
         printf("MQTT Connect Start...\n");
-        A7670C_CMQTTSTART_Exec_Response CMQTTSTART_Response;
-        result = A7670C_CMQTTSTART_Exec(&CMQTTSTART_Response, 12000);
-        if(CMQTTSTART_Response.code!=kA7670C_Response_Code_OK){
+        nRetry = 3;
+        while(1){
+            A7670C_CMQTTSTART_Exec_Response CMQTTSTART_Response;
+            result = A7670C_CMQTTSTART_Exec(&CMQTTSTART_Response, 12000);
+            if(CMQTTSTART_Response.code==kA7670C_Response_Code_OK){
+                break;
+            }
+
+            if(CMQTTSTART_Response.err_code == -1){
+                /*-1: 表示已经打开过， 可以进行下一步*/
+                break;
+            }
+
             printf("CMQTTSTART_Response %d, err=%d\n", result, CMQTTSTART_Response.err_code);
-            /*在规定的时间内未获得响应*/
-            return kA7670C_Result_ERROR;
+
+            if(nRetry-- == 0){
+                return kA7670C_Result_ERROR;
+            }
         }
-        
-        if(CMQTTSTART_Response.err_code>0){
-            printf("CMQTTSTART_Response %d, err=%d\n", result, CMQTTSTART_Response.err_code);
-            /*-1: 表示已经打开过， 可以进行下一步*/
-            return kA7670C_Result_ERROR;
-        }
-        
+
         session->state = kA7670C_MQTT_State_START;
     }
     
@@ -252,24 +261,29 @@ A7670C_Result A7670C_MQTT_Connect(
     }
     
     if(session->state<kA7670C_MQTT_State_CONNECT){
-        A7670C_CMQTTCONNECT_Write_Response CMQTTCONNECT_Write_Response;
-        printf("MQTT CONNECT Write...\n");
-        result = A7670C_CMQTTCONNECT_Write(&CMQTTCONNECT_Write_Response, session->client_index, server_addr, keepalive_time, clean_session, username, password, 9000);
-        if(CMQTTCONNECT_Write_Response.err_code==19){
-            session->state=kA7670C_MQTT_State_CONNECT;
-            return kA7670C_Result_OK;
-        }
-        if(CMQTTCONNECT_Write_Response.code!=kA7670C_Response_Code_OK){
-            printf("MQTT CONNECT Write Result: %d\n", result);
-            return kA7670C_Result_ERROR;
-        }
-        if(CMQTTCONNECT_Write_Response.err_code>0){
-            printf("[MQTT] ERR - CMQTTCONNECT_Write_Response %d, err=%d\n"
-                       , CMQTTCONNECT_Write_Response.code
-                       , CMQTTCONNECT_Write_Response.err_code);
-            return kA7670C_Result_ERROR;
-        }
+        nRetry = 3;
+        while(1){
+            A7670C_CMQTTCONNECT_Write_Response CMQTTCONNECT_Write_Response;
+            printf("MQTT CONNECT Write...\n");
+            result = A7670C_CMQTTCONNECT_Write(&CMQTTCONNECT_Write_Response, session->client_index
+                                               , server_addr
+                                               , keepalive_time
+                                               , clean_session, username, password, 9000);
+            if(CMQTTCONNECT_Write_Response.err_code==19){
+                break;
+            }
+            if(CMQTTCONNECT_Write_Response.code==kA7670C_Response_Code_OK){
+                break;
+            }
 
+            printf("[MQTT] ERR - CMQTTCONNECT_Write_Response %d, err=%d\n"
+                    , CMQTTCONNECT_Write_Response.code
+                    , CMQTTCONNECT_Write_Response.err_code);
+
+            if(nRetry-- == 0){
+                return kA7670C_Result_ERROR;
+            }
+        }
         session->state=kA7670C_MQTT_State_CONNECT;
         return kA7670C_Result_OK;
     }

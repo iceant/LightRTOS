@@ -78,7 +78,7 @@ __A7670C__Boot:
         if(nRetry++==10){
             return kA7670C_Result_TIMEOUT;
         }
-        A7670C_NopDelay(0x3FFFFF);
+        A7670C_NopDelay(0xEFFFFF);
     }
     
     nRetry = 0;
@@ -95,7 +95,7 @@ __A7670C__Boot:
         if(nRetry++==10){
             return kA7670C_Result_TIMEOUT;
         }
-        A7670C_NopDelay(0x3FFFFF);
+        A7670C_NopDelay(0xFFFFFF);
     }
 
 #if 0
