@@ -43,7 +43,7 @@ static void Boot_Thread_Entry(void* p){
 
     
     /* 用到内存，需要先初始化内存模块 */
-    EnergyMeter_Init();
+//    EnergyMeter_Init();
 
     int nCount = 0;
     char * Message = "Send From Chen Peng";
@@ -61,19 +61,26 @@ static void Boot_Thread_Entry(void* p){
                , dateTime.millisecond
                , BSP_TIM2_GetTickCount()
                );
+        
+        long Current = CHCS_CAB_500A_GetCurrent();
+        printf("CHCS_CAB_500A Current: %ld\n", Current);
 
 //        uint32_t Voltage = 0;
-//        IM1253E_GetVoltage(&Voltage, 120);
-//        printf("IM1253E_Voltage: %ld\n", Voltage);
+//        os_err_t err = IM1253E_GetVoltage(&Voltage, 120);
+//        if(err!=OS_EOK){
+//            printf("IM1253E_Voltage: %ld\n", Voltage);
+//        }else{
+//            printf("IM1253E_Voltage - Error %d\n", err);
+//        }
 //
 //        IM1253E_Data_T IM1253E_Data;
 //        IM1253E_GetData(&IM1253E_Data, 140);
 //        printf("IM1253E_DATA Voltage: %ld\n", Voltage);
 
-        if(nCount++==5){
-            nCount = 0;
-            MQTT_Publish(Message, strlen(Message));
-        }
+//        if(nCount++==5){
+//            nCount = 0;
+//            MQTT_Publish(Message, strlen(Message));
+//        }
 
         os_thread_mdelay(5000);
     }

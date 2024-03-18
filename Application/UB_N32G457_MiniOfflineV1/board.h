@@ -91,6 +91,11 @@
 #include <MQTT.h>
 #endif /*INCLUDED_MQTT_H*/
 
+#ifndef INCLUDED_CHCS_CAB_500A_H
+#include <CHCS_CAB_500A.h>
+#endif /*INCLUDED_CHCS_CAB_500A_H*/
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 void board_init(void);

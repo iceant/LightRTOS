@@ -98,6 +98,10 @@ static IM1253E_IO_T IM1253E_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_U
                                   .send = BSP_UART7_Send,
                                   .notify = BSP_UART7_Notify
                                   };
+
+#if defined(CURRENT_SENSOR_ENABLE)
+static CHCS_CAB_500A_IO_T CHCS_CAB_500A_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_CAN2_SetRxHandler};
+#endif
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -151,6 +155,7 @@ void board_init(void)
 
 #if defined(CURRENT_SENSOR_ENABLE)
     BSP_CAN2_Init();    /* CURRENT IO */
+    CHCS_CAB_500A_Init(&CHCS_CAB_500A_IO);
 #endif
 
 #if defined(RTC_ENABLE)

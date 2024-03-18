@@ -120,6 +120,11 @@ foreach (item IN LISTS DEVICE_KEY_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
+file(GLOB DEVICE_CHCS_CAB_500A_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/CHCS-CAB-500A/*.c)
+foreach (item IN LISTS DEVICE_CHCS_CAB_500A_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
 ########################################################################################################################
 file(GLOB MODULE_CONSOLE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console/*.c)
 foreach (item IN LISTS CONSOLE_SOURCES)
@@ -167,6 +172,7 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${DEVICE_A7670C_V25TER_SOURCES}
         PUBLIC ${DEVICE_IM1253E_SOURCES}
         PUBLIC ${DEVICE_KEY_SOURCES}
+        PUBLIC ${DEVICE_CHCS_CAB_500A_SOURCES}
 
         PUBLIC ${MODULE_CONSOLE_SOURCES}
         PUBLIC ${MODULE_NTP_SOURCES}
@@ -193,6 +199,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/De
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/V25TER)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/IM1253E)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/Key)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/CHCS-CAB-500A)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/NTP)
