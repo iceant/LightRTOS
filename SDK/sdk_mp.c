@@ -12,10 +12,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-#define sign(x) ((x)[nbytes-1]>>shift)
-#define ones(n) (~(~0UL<<(((n)-1)%8+1)))
-#define iszero(x) (sdk_xp_length(nbytes,(x))==1 && (x)[0]==0)
 #define BASE (1<<8)
+
+#define sign(x) ((x)[nbytes-1]>>shift)
+
+#define ones(n) (~(~0UL<<(((n)-1)%8+1)))
+
+#define iszero(x) (sdk_xp_length(nbytes,(x))==1 && (x)[0]==0)
+
 #define bitop(op) \
 	int i; assert(z); assert(x); assert(y); \
 	for (i = 0; i < nbytes; i++) z[i] = x[i] op y[i]; \
@@ -25,6 +29,7 @@
 #define bitopi(op) assert(z); assert(x); \
 	applyu(op, z, x, y); \
 	return z
+
 #define shft(fill, op) \
 	assert(x); assert(z); assert(s >= 0); \
 	if (s >= nbits) memset(z, fill, nbytes); \
@@ -40,6 +45,9 @@ static int shift  = (32-1)%8;
 static unsigned char msb = 0xFF;
 static unsigned char temp[16 + 16 + 16 + 2*16+2];
 static sdk_mp_t tmp[] = {temp, temp+1*16, temp+2*16, temp+3*16};
+
+////////////////////////////////////////////////////////////////////////////////
+////
 
 static int applyu(int op(sdk_mp_t, sdk_mp_t, sdk_mp_t, sdk_mp_t *), sdk_mp_t z, sdk_mp_t x,
                   unsigned long u) {

@@ -279,7 +279,7 @@ char *sdk_xp_tostr(char *str, int size, int base,
         int r = sdk_xp_quotient(n, x, x, base);
         assert(i < size);
         str[i++] =
-                "0123456789ABCDEFGHIJKLMNOPQRSsdk_xp_tUVWXYZ"[r];
+                "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r];
         while (n > 1 && x[n-1] == 0)
             n--;
     } while (n > 1 || x[0] != 0);
