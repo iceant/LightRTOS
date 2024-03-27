@@ -102,8 +102,13 @@ int sdk_mp_set(int n) {
     return prev;
 }
 
-int sdk_mp_new(unsigned long u, sdk_mp_t* result) {
-    return sdk_mp_fromintu(OS_ALLOC(nbytes), u, result);
+sdk_mp_t sdk_mp_new(unsigned long u){
+    sdk_mp_t mp = OS_ALLOC(nbytes);
+    if(!mp){
+        return 0;
+    }
+    sdk_mp_fromintu(mp, u, 0);
+    return mp;
 }
 
 void sdk_mp_free(sdk_mp_t *mp){
@@ -243,7 +248,8 @@ int sdk_mp_subu(sdk_mp_t z, sdk_mp_t x, sdk_mp_t y, sdk_mp_t* result){
     return SDK_MP_EOK;
 }
 
-sdk_mp_t sdk_mp_mul2u(sdk_mp_t z, sdk_mp_t x, sdk_mp_t y) {
+sdk_mp_t sdk_mp_mul2u(sdk_mp_t z, sdk_mp_t x, sdk_mp_t y)
+{
     assert(x); assert(y); assert(z);
     memset(tmp[3], '\0', 2*nbytes);
     sdk_xp_mul(tmp[3], nbytes, x, nbytes, y);
@@ -904,3 +910,5 @@ void sdk_mp_fmt(int code, va_list_box *box,
              width, precision);
     OS_FREE(buf);
 }
+
+
