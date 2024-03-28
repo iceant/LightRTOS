@@ -1,0 +1,16 @@
+pack:
+  - ../../Packs/Keil.STM32H7xx_DFP.3.1.1.pack
+#  - ../../Packs/Nationstech.N32L40x_DFP.0.9.0.pack
+#  - ../../Packs/Nationstech.N32G45x_DFP.1.0.6.pack
+
+target_override: STM32H750VBTx
+
+#probes:
+#  601012352:
+#    target_override: n32l406cb
+#  29A509317F281FB6DC9254C4D064247F:
+#    target_override: n32l406cb
+#  110136025431312034323934313038203432303497969903:
+#    target_override: n32l406cb
+
+frequency: 5000000
