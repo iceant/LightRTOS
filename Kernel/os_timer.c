@@ -1,5 +1,5 @@
 #include <os_timer.h>
-#include <cpu_spinlock.h>
+#include <cpu_lock.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -25,13 +25,19 @@
 #define WHEEL4_MAX (0xFFFFFFFFU)
 ////////////////////////////////////////////////////////////////////////////////
 ////
-static cpu_spinlock_t os_timer__spinlock={.atomic.counter=0};
+static cpu_lock_t os_timer__lock=0;
 static volatile os_time_t os_timer__current_time=0;
 static os_list_t os_timer__wheel0[OS_TIMER_WHEEL0_SIZE]={0};    /* 0x00000000 ~ 0x000000FF */
 static os_list_t os_timer__wheel1[OS_TIMER_WHEELx_SIZE]={0};    /* 0x00000100 ~ 0x00003FFF */
 static os_list_t os_timer__wheel2[OS_TIMER_WHEELx_SIZE]={0};    /* 0x00004000 ~ 0x000FFFFF */
 static os_list_t os_timer__wheel3[OS_TIMER_WHEELx_SIZE]={0};    /* 0x00100000 ~ 0x03FFFFFF */
 static os_list_t os_timer__wheel4[OS_TIMER_WHEELx_SIZE]={0};    /* 0x04000000 ~ 0xFFFFFFFF */
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+#define OS_TIMER_LOCK() cpu_lock_lock(&os_timer__lock)
+#define OS_TIMER_UNLOCK() cpu_lock_unlock(&os_timer__lock)
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -86,7 +92,7 @@ static os_err_t os_timer__insert_no_lock(os_timer_node_t* node){
 
 os_err_t os_timer_init(void){
     os_size_t i;
-    cpu_spinlock_init(&os_timer__spinlock);
+    cpu_lock_init(&os_timer__lock);
     
     os_timer__current_time = 0;
     
@@ -116,7 +122,7 @@ os_bool_t os_timer_tick(void){
     os_timer_node_t * timer_node = 0;
     os_bool_t need_schedule_flag = OS_FALSE;
     
-    cpu_spinlock_lock(&os_timer__spinlock);
+    OS_TIMER_LOCK();
     {
         os_timer__current_time++;
         time = os_timer__current_time;
@@ -137,7 +143,7 @@ os_bool_t os_timer_tick(void){
             }
         }
     }
-    cpu_spinlock_unlock(&os_timer__spinlock);
+    OS_TIMER_UNLOCK();
     
     return need_schedule_flag;
 }
@@ -146,7 +152,7 @@ os_err_t os_timer_insert(os_timer_node_t* node)
 {
     os_list_t * wheel = 0;
     
-    cpu_spinlock_lock(&os_timer__spinlock);
+    OS_TIMER_LOCK();
     {
         OS_LIST_INIT(&node->node);
         
@@ -154,7 +160,7 @@ os_err_t os_timer_insert(os_timer_node_t* node)
         os_timer__find_wheel(node->expires, &wheel);
         os_timer__insert_by_expires(node, wheel);
     }
-    cpu_spinlock_unlock(&os_timer__spinlock);
+    OS_TIMER_UNLOCK();
     
     return OS_EOK;
 }
@@ -164,7 +170,7 @@ os_err_t os_timer_add(os_timer_node_t* node, os_timer_timeout timeout, void* use
 {
     os_list_t * wheel = 0;
     
-    cpu_spinlock_lock(&os_timer__spinlock);
+    OS_TIMER_LOCK();
     {
         OS_LIST_REMOVE(&node->node);
         node->timeout = timeout;
@@ -176,7 +182,7 @@ os_err_t os_timer_add(os_timer_node_t* node, os_timer_timeout timeout, void* use
         os_timer__find_wheel(node->expires, &wheel);
         os_timer__insert_by_expires(node, wheel);
     }
-    cpu_spinlock_unlock(&os_timer__spinlock);
+    OS_TIMER_UNLOCK();
 
     return OS_EOK;
 }

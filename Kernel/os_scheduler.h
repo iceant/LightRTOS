@@ -45,6 +45,6 @@ volatile os_tick_t os_scheduler_get_current_tick(void);
 
 os_bool_t os_scheduler_is_ready(void);
 
-void os_scheduler_ctrl(int ctrl_flag);
+//void os_scheduler_ctrl(int ctrl_flag);
 
 #endif /*INCLUDED_OS_SCHEDULER_H*/

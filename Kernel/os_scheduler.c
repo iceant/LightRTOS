@@ -1,6 +1,6 @@
 #include <os_scheduler.h>
 #include <cpu_tick.h>
-#include <cpu_spinlock.h>
+#include <cpu_lock.h>
 #include <os_timer.h>
 
 #include <assert.h>
@@ -14,18 +14,18 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-static cpu_spinlock_t os_scheduler__tick_lock={.atomic.counter =0};
-static cpu_spinlock_t os_scheduler__lock={.atomic.counter = 0};
+static cpu_lock_t os_scheduler__tick_lock=0;
+static cpu_lock_t os_scheduler__lock=0;
 static volatile os_tick_t os_scheduler__tick_count=0;
 static volatile os_thread_t* os_scheduler__current_thread=0;
 static os_list_t os_scheduler__ready_table[OS_PRIORITY_MAX]={0};
 static volatile os_bool_t os_scheduler__init_flag = OS_FALSE;
-static volatile int os_scheduler__ctrl_flag = 0;
+//static volatile int os_scheduler__ctrl_flag = 0;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-#define OS_SCHEDULER_LOCK() cpu_spinlock_lock(&os_scheduler__lock)
-#define OS_SCHEDULER_UNLOCK() cpu_spinlock_unlock(&os_scheduler__lock)
+#define OS_SCHEDULER_LOCK() cpu_lock_lock(&os_scheduler__lock)
+#define OS_SCHEDULER_UNLOCK() cpu_lock_unlock(&os_scheduler__lock)
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -34,7 +34,7 @@ static void os_scheduler__SysTickHandler(void){
     register os_bool_t tick_schedule_flag = OS_FALSE;
     register os_bool_t timer_schedule_flag = OS_FALSE;
 
-    cpu_spinlock_lock(&os_scheduler__tick_lock);
+    cpu_lock_lock(&os_scheduler__tick_lock);
     {
         os_scheduler__tick_count++;
         current_thread = os_scheduler__current_thread;
@@ -49,7 +49,7 @@ static void os_scheduler__SysTickHandler(void){
         
         timer_schedule_flag = os_timer_tick();
     }
-    cpu_spinlock_unlock(&os_scheduler__tick_lock);
+    cpu_lock_unlock(&os_scheduler__tick_lock);
     
     if(tick_schedule_flag || timer_schedule_flag){
         os_scheduler_schedule();
@@ -117,12 +117,12 @@ os_err_t os_scheduler_init(void){
     return OS_EOK;
 }
 
-void os_scheduler_ctrl(int ctrl_flag)
-{
-    OS_SCHEDULER_LOCK();
-    os_scheduler__ctrl_flag = ctrl_flag;
-    OS_SCHEDULER_UNLOCK();
-}
+//void os_scheduler_ctrl(int ctrl_flag)
+//{
+//    OS_SCHEDULER_LOCK();
+//    os_scheduler__ctrl_flag = ctrl_flag;
+//    OS_SCHEDULER_UNLOCK();
+//}
 
 os_err_t os_scheduler_schedule(void)
 {

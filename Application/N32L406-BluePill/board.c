@@ -1,6 +1,7 @@
 #include "board.h"
 #include <string.h>
 #include <os_kernel.h>
+#include <stdio.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -39,7 +40,17 @@ static ESP01S_IO_T ESP01S_DeviceIO={.send=BSP_USART2_Send, .set_rx_handler=(void
                                     , .wait=BSP_USART2_TimeWait, .notify=BSP_USART2_Notify};
 ESP01S_Device_T ESP01S_Device={.device_io=&ESP01S_DeviceIO};
 
-static OLED_IO_T OLED_IO={.recv=BSP_I2C1_Recv, .send=BSP_I2C1_Send};
+static OLED_IO_T OLED_IO={.recv=BSP_I2C1_Recv, .send=BSP_I2C1_Send, .reset=BSP_I2C1_Reset};
+
+////////////////////////////////////////////////////////////////////////////////
+////
+static void OLED_IO_TimeoutHandler(void* userdata){
+    BSP_I2C1_Reset();
+//    for(int i=0; i<0x3FFFFF; i++);
+    printf("Call OLED_TurnOn()...\n");
+//    OLED_Display_On();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -64,6 +75,7 @@ void board_init(void)
     DS1302_Init();
     ESP01S_Init(&ESP01S_Device, &ESP01S_DeviceIO);
     OLED_Init(&OLED_IO);
+    BSP_I2C1_SetTimeoutHandler(OLED_IO_TimeoutHandler, 0);
     OLED_TurnOn();
 }
 

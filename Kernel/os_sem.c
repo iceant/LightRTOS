@@ -75,7 +75,7 @@ os_err_t os_sem_init(os_sem_t* sem, const char* name, int value, int flag)
 
     OS_LIST_INIT(&sem->list);
     
-    cpu_spinlock_init(&sem->lock);
+    cpu_lock_init(&sem->lock);
     
     return OS_EOK;
 }
@@ -84,12 +84,11 @@ os_err_t os_sem_assert_take(os_sem_t * sem, os_thread_t * assert_owner, os_tick_
     volatile os_thread_t * current_thread;
 
     while(1){
-        cpu_spinlock_lock(&sem->lock);
+        cpu_lock_lock(&sem->lock);
         if(sem->value>0){
             sem->value--;
             /* 在 Take 前有 Release 发生，可以在初始化 sem 时，设置初始 Value，这样可以达到控制的目的 */
-            cpu_spinlock_unlock(&sem->lock);
-
+            cpu_lock_unlock(&sem->lock);
             return OS_EOK;
         }
 
@@ -124,19 +123,19 @@ os_err_t os_sem_assert_take(os_sem_t * sem, os_thread_t * assert_owner, os_tick_
         assert(OS_LIST_IS_EMPTY(&current_thread->wait_node));
 
         if(ticks==0){
-            cpu_spinlock_unlock(&sem->lock);
+            cpu_lock_unlock(&sem->lock);
 
             return OS_ETIMEOUT;
         }else if(ticks == OS_WAIT_INFINITY){
             os_sem__insert(sem, current_thread); /* 挂在 sem 上 */
 
             current_thread->state = OS_THREAD_STATE_WAIT;
-            cpu_spinlock_unlock(&sem->lock);
+            cpu_lock_unlock(&sem->lock);
 
             os_scheduler_schedule();
         }else{
             os_sem__insert(sem, current_thread); /* 挂在 sem 上 */
-            cpu_spinlock_unlock(&sem->lock);
+            cpu_lock_unlock(&sem->lock);
 
             /* 有等待时间，挂在 timer 上, 这里会调度 */
             os_scheduler_timed_wait((os_thread_t*)current_thread, ticks);
@@ -155,12 +154,12 @@ os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks)
     volatile os_thread_t * current_thread;
 
     while(1){
-        cpu_spinlock_lock(&sem->lock);
+        cpu_lock_lock(&sem->lock);
 //        printf("Sem[%s] Locked By Thread:%s\n", sem->name, os_thread_self()->name);
         if(sem->value>0){
             sem->value--;
             /* 在 Take 前有 Release 发生，可以在初始化 sem 时，设置初始 Value，这样可以达到控制的目的 */
-            cpu_spinlock_unlock(&sem->lock);
+            cpu_lock_unlock(&sem->lock);
             return OS_EOK;
         }
 
@@ -168,27 +167,27 @@ os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks)
         current_thread = os_thread_self();
         current_thread->error = OS_THREAD_EOK;
         
-        assert(current_thread->state & OS_THREAD_STATE_RUNNING);
-        
         if(!(current_thread->state & OS_THREAD_STATE_RUNNING)){
-            cpu_spinlock_unlock(&sem->lock);
+            cpu_lock_unlock(&sem->lock);
             os_scheduler_schedule();
             continue;
         }
 
+        assert(current_thread->state & OS_THREAD_STATE_RUNNING);
+
         if(ticks==0){
-            cpu_spinlock_unlock(&sem->lock);
+            cpu_lock_unlock(&sem->lock);
             return OS_ETIMEOUT;
         }else if(ticks == OS_WAIT_INFINITY){
             os_sem__insert(sem, current_thread); /* 挂在 sem 上 */
             current_thread->state = OS_THREAD_STATE_WAIT;
-            cpu_spinlock_unlock(&sem->lock);
+            cpu_lock_unlock(&sem->lock);
 
             os_scheduler_schedule();
 
         }else{
             os_sem__insert(sem, current_thread); /* 挂在 sem 上 */
-            cpu_spinlock_unlock(&sem->lock);
+            cpu_lock_unlock(&sem->lock);
             /* 有等待时间，挂在 timer 上, 这里会调度 */
             os_scheduler_timed_wait((os_thread_t*)current_thread, ticks);
             
@@ -204,12 +203,12 @@ os_err_t os_sem_take(os_sem_t* sem, os_tick_t ticks)
 
 os_err_t os_sem_release(os_sem_t* sem)
 {
-    cpu_spinlock_lock(&sem->lock);
+    cpu_lock_lock(&sem->lock);
     {
         sem->value++;
         os_sem__notify_all(sem);
     }
-    cpu_spinlock_unlock(&sem->lock);
+    cpu_lock_unlock(&sem->lock);
 
     /* 调度 */
     return os_scheduler_schedule();

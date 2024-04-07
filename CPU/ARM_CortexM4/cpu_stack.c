@@ -1,8 +1,8 @@
 #include <cpu_stack.h>
 #include <cpu_atomic.h>
 #include <assert.h>
-#include <cpu_spinlock.h>
-#include <stdio_ext.h>
+#include <cpu_lock.h>
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define CPU_STACK_SWITCH_FLAG_ON    1
@@ -18,7 +18,7 @@ volatile uint8_t cpu__stack_switch_flag = CPU_STACK_SWITCH_FLAG_OFF;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-static cpu_spinlock_t cpu_stack__spinlock={.atomic.counter=0};
+static cpu_lock_t cpu_stack__lock=0;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -80,13 +80,13 @@ int cpu_stack_switch(void** current_stack_p, void** next_stack_p)
         return -1;
     }
     
-    cpu_spinlock_lock(&cpu_stack__spinlock);
+    cpu_lock_lock(&cpu_stack__lock);
     {
         cpu__stack_switch_flag = CPU_STACK_SWITCH_FLAG_ON;
         cpu__stack_curr_p = current_stack_p;
         cpu__stack_next_p = next_stack_p;
     }
-    cpu_spinlock_unlock(&cpu_stack__spinlock);
+    cpu_lock_unlock(&cpu_stack__lock);
 
     if(cpu__in_privilege()==1){
         /*设置中断需要特权，已在特权模式，直接设置*/

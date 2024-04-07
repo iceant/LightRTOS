@@ -20,9 +20,9 @@
 #include <os_tick.h>
 #endif /* INCLUDED_OS_TICK_H */
 
-#ifndef INCLUDED_CPU_SPINLOCK_H
-#include <cpu_spinlock.h>
-#endif /* INCLUDED_CPU_SPINLOCK_H */
+#ifndef INCLUDED_CPU_LOCK_H
+#include <cpu_lock.h>
+#endif /*INCLUDED_CPU_LOCK_H*/
 
 #ifndef INCLUDED_OS_THREAD_H
 #include <os_thread.h>
@@ -37,7 +37,7 @@ typedef struct os_sem_s{
     char name[OS_NAME_MAX_SIZE];
     int flag;
     os_list_t list;
-    cpu_spinlock_t lock;
+    cpu_lock_t lock;
 }os_sem_t;
 
 ////////////////////////////////////////////////////////////////////////////////
