@@ -157,6 +157,10 @@ static void thread1_entry(void* p){
 ////////////////////////////////////////////////////////////////////////////////
 ////
 static void USART1__RxHandler(sdk_ringbuffer_t * buffer, void* userdata){
+    if(sdk_ringbuffer_find_str(buffer, 0, "reboot")!=-1){
+        cpu_reboot();
+        return;
+    }
     if(sdk_ringbuffer_find_str(buffer, 0, "\r\n")!=-1){
         printf("USART1: %s\n", buffer->buffer,sdk_ringbuffer_used(buffer));
         sdk_ringbuffer_reset(buffer);

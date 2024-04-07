@@ -18,7 +18,7 @@ void SVC_Handler_C(unsigned  int * svc_args)
 //            svc_exc_return = 0xFFFFFFFDU;
             break;
         case 1:
-            cpu_reboot();
+            cpu__reboot();
 //            svc_exc_return = 0xFFFFFFFDU;
             break;
         default:

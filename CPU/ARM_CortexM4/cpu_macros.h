@@ -145,6 +145,11 @@ __STATIC_FORCEINLINE cpu_uint_t cpu_rbit(cpu_uint_t value)
 //    return cpu_clz(cpu_rbit(value));
 //}
 
+__STATIC_FORCEINLINE int cpu_in_privilege(void){
+    if(cpu_get_IPSR()!=0) return  1;
+    else if((cpu_get_CONTROL() & 0x01)==0) return 1;
+    else return 0;
+}
 ////////////////////////////////////////////////////////////////////////////////
 //// for REBOOT
 
@@ -181,7 +186,7 @@ __STATIC_FORCEINLINE cpu_uint_t cpu_rbit(cpu_uint_t value)
 #define SCB_AIRCR_SYSRESETREQ_Msk          (1UL << SCB_AIRCR_SYSRESETREQ_Pos)             /*!< SCB AIRCR: SYSRESETREQ Mask */
 #endif
 
-__STATIC_FORCEINLINE void cpu_reboot(void)
+__STATIC_FORCEINLINE void cpu__reboot(void)
 {
     cpu_dsb();                                                          /* Ensure all outstanding memory accesses included
                                                                        buffered write are completed before reset */
@@ -193,6 +198,18 @@ __STATIC_FORCEINLINE void cpu_reboot(void)
     for(;;)                                                           /* wait until reset */
     {
         __asm__ volatile("nop");
+    }
+}
+
+
+__STATIC_FORCEINLINE void cpu_reboot(void)
+{
+    if(cpu_in_privilege()==1){
+        /*设置中断需要特权，已在特权模式，直接设置*/
+        cpu__reboot();
+    }else{
+        /*设置中断需要特权，没有特权，通过 SVC 来设置*/
+        __svc(1);
     }
 }
 

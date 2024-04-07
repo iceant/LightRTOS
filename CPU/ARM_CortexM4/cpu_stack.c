@@ -19,15 +19,6 @@ volatile uint8_t cpu__stack_switch_flag = CPU_STACK_SWITCH_FLAG_OFF;
 ////
 
 static cpu_lock_t cpu_stack__lock=0;
-////////////////////////////////////////////////////////////////////////////////
-////
-
-__STATIC_FORCEINLINE int cpu__in_privilege(void){
-    if(cpu_get_IPSR()!=0) return  1;
-    else if((cpu_get_CONTROL() & 0x01)==0) return 1;
-    else return 0;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -88,7 +79,7 @@ int cpu_stack_switch(void** current_stack_p, void** next_stack_p)
     }
     cpu_lock_unlock(&cpu_stack__lock);
 
-    if(cpu__in_privilege()==1){
+    if(cpu_in_privilege()==1){
         /*设置中断需要特权，已在特权模式，直接设置*/
         CPU_REG(SCB_ICSR) |= SCB_ICSR_PENDSVSET_Msk;
     }else{
