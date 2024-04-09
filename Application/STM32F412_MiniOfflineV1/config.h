@@ -1,0 +1,14 @@
+#ifndef INCLUDED_CONFIG_H
+#define INCLUDED_CONFIG_H
+
+#define NETWORK_ENABLE
+#define CURRENT_SENSOR_ENABLE
+#define VOLTAGE_SENSOR_ENABLE
+#define RTC_ENABLE
+#define MS_TIME_ENABLE
+
+#define CONFIG_MQTT_SERVER 		"tcp://ubattery.cn:11883"
+#define CONFIG_MQTT_USERNAME 	"guest"
+#define CONFIG_MQTT_PASSWORD    "guest"
+
+#endif /* INCLUDED_CONFIG_H */

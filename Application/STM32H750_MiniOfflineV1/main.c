@@ -15,13 +15,15 @@ static os_thread_t Boot_Thread;
 ////
 
 static void Boot_Thread_Entry(void* p){
-    IO_USART1_SendString("Boot Thread Entry Enter...\n");
+//    BSP_USART1_SendString("Boot Thread Entry Enter...\n");
+    const char* message = "Boot Thread Entry Enter...\n";
+    BSP_USART1_DMA_Send((uint8_t *)message, strlen(message));
+
     int nCount = 0;
     while(1){
         printf("nCount:%d \r\n", nCount++);
         os_thread_mdelay(1000);
     }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +31,10 @@ static void Boot_Thread_Entry(void* p){
 
 int main(void){
     board_init();
-    IO_USART1_SendString("Board Init Finished!\r\n");
+
+    const char* message = "Board Init Finished!\r\n";
+//    BSP_USART1_SendString(message);
+    BSP_USART1_DMA_Send((uint8_t *)message, strlen(message));
 
     os_kernel_init();
 

@@ -3,11 +3,10 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-#ifndef INCLUDED_STM32H7XX_H
-#define INCLUDED_STM32H7XX_H
-#include <stm32h7xx.h>
-#endif /*INCLUDED_STM32H7XX_H*/
-
+#ifndef INCLUDED_STM32F4XX_H
+#define INCLUDED_STM32F4XX_H
+#include <stm32f4xx.h>
+#endif /*INCLUDED_STM32F4XX_H*/
 
 #ifndef INCLUDED_STDINT_H
 #define INCLUDED_STDINT_H

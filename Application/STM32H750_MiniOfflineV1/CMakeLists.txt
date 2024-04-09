@@ -12,7 +12,7 @@ option(CPU_ARM_CORTEX_M4 "Use ARM Cortex-M4 CPU" ON)
 option(USE_TLSF "Use TLSF Memory Allocator" ON)
 
 add_definitions(
-        -DCPU_TICKS_PER_SECOND=100
+        -DCPU_TICKS_PER_SECOND=1000
         -DTLSF_MEMORY_POOL_SIZE=10240
         -DCPU_32BIT
         -DUSE_TLSF
@@ -41,26 +41,6 @@ endforeach ()
 
 file(GLOB HARDWARE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Hardware/*.c)
 foreach (item IN LISTS HARDWARE_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
-
-file(GLOB CONSOLE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/Console/*.c)
-foreach (item IN LISTS CONSOLE_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
-
-file(GLOB DEVICE_sFLASH_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/sFLASH/*.c)
-foreach (item IN LISTS DEVICE_sFLASH_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
-
-file(GLOB DEVICE_DS1307_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/DS1307/*.c)
-foreach (item IN LISTS DEVICE_DS1307_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
-
-file(GLOB DEVICE_IM1253E_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/IM1253E/*.c)
-foreach (item IN LISTS DEVICE_IM1253E_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
@@ -115,41 +95,9 @@ foreach (item IN LISTS DEVICE_A7670C_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_KEY_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/Key/*.c)
-foreach (item IN LISTS DEVICE_KEY_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
-
-file(GLOB DEVICE_CHCS_CAB_500A_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/CHCS-CAB-500A/*.c)
-foreach (item IN LISTS DEVICE_CHCS_CAB_500A_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
 
 ########################################################################################################################
-file(GLOB MODULE_CONSOLE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console/*.c)
-foreach (item IN LISTS CONSOLE_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
 
-file(GLOB MODULE_NTP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/NTP/*.c)
-foreach (item IN LISTS MODULE_NTP_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
-
-file(GLOB MODULE_SYSTEM_DATETIME_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/SystemDateTime/*.c)
-foreach (item IN LISTS MODULE_SYSTEM_DATETIME_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
-
-file(GLOB MODULE_ENERGY_METER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/EnergyMeter/*.c)
-foreach (item IN LISTS MODULE_ENERGY_METER_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
-
-file(GLOB MODULE_MQTT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Module/MQTT/*.c)
-foreach (item IN LISTS MODULE_MQTT_SOURCES)
-    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
-endforeach ()
 
 ########################################################################################################################
 add_executable(${PROJECT_NAME} "")
@@ -157,9 +105,7 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${SOURCES}
         PUBLIC ${BSP_SOURCES}
         PUBLIC ${HARDWARE_SOURCES}
-        PUBLIC ${CONSOLE_SOURCES}
-        PUBLIC ${DEVICE_sFLASH_SOURCES}
-        PUBLIC ${DEVICE_DS1307_SOURCES}
+
         PUBLIC ${DEVICE_A7670C_SOURCES}
         PUBLIC ${DEVICE_A7670C_COMMON_SOURCES}
         PUBLIC ${DEVICE_A7670C_HTTP_SOURCES}
@@ -174,19 +120,12 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${DEVICE_KEY_SOURCES}
         PUBLIC ${DEVICE_CHCS_CAB_500A_SOURCES}
 
-        PUBLIC ${MODULE_CONSOLE_SOURCES}
-        PUBLIC ${MODULE_NTP_SOURCES}
-        PUBLIC ${MODULE_SYSTEM_DATETIME_SOURCES}
-        PUBLIC ${MODULE_ENERGY_METER_SOURCES}
-        PUBLIC ${MODULE_MQTT_SOURCES}
 
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/BSP)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Hardware)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/Console)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/sFLASH)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/DS1307)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/Common)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/HTTP)
@@ -197,15 +136,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/De
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/SIMCard)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/StatusControl)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/V25TER)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/IM1253E)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/Key)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/CHCS-CAB-500A)
-
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/Console)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/NTP)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/SystemDateTime)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/EnergyMeter)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Module/MQTT)
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC STM32H750x_HAL

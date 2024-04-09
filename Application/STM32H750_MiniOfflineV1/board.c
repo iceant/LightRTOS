@@ -2,9 +2,6 @@
 #include <string.h>
 #include <os_kernel.h>
 
-////////////////////////////////////////////////////////////////////////////////
-////
-static UART_HandleTypeDef IO_USART1;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,73 +18,43 @@ static UART_HandleTypeDef IO_USART1;
 
 PUTCHAR_PROTOTYPE
 {
-    HAL_UART_Transmit(&IO_USART1, (uint8_t *)&ch, 1, 1000);
+    HAL_UART_Transmit(&BSP_USART1__Handle, (uint8_t *)&ch, 1, 1000);
     return (ch);
 }
 
 GETCHAR_PROTOTYPE
 {
+    int ch;
     /* Loop until the USARTy Receive Data Register is not empty */
-    //while(__HAL_UART_GET_FLAG(&IO_USART1, UART_FLAG_RXFNE)==RESET);
+   //while(__HAL_UART_GET_FLAG(&BSP_USART1__Handle, UART_FLAG_RXNE)==RESET);
     /* Store the received byte in RxBuffer */
-    uint8_t ch=0;
-    HAL_UART_Receive(&IO_USART1, &ch, 1, 1000);
+    HAL_UART_Receive(&BSP_USART1__Handle, (uint8_t*)&ch, 1, 1000);
     return ch;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
-static void IO_USART1_Init(void){
-    GPIO_InitTypeDef GPIO_InitStruct;
-
-    RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit;
-
-    __HAL_RCC_GPIOA_CLK_ENABLE(); /* TX_GPIO_CLK_ENALBE */
-    __HAL_RCC_GPIOA_CLK_ENABLE(); /* RX_GPIO_CLK_ENALBE */
-
-    /* 配置串口1时钟源*/
-    RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
-    RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
-    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
-    /* 使能串口1时钟 */
-    __USART1_CLK_ENABLE();
-
-    /* 配置Tx引脚为复用功能  */
-    GPIO_InitStruct.Pin = GPIO_PIN_9;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    /* 配置Rx引脚为复用功能 */
-    GPIO_InitStruct.Pin = GPIO_PIN_10;
-    GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    /* 配置串DEBUG_USART 模式 */
-    IO_USART1.Instance = USART1;
-    IO_USART1.Init.BaudRate = 115200;
-    IO_USART1.Init.WordLength = UART_WORDLENGTH_8B;
-    IO_USART1.Init.StopBits = UART_STOPBITS_1;
-    IO_USART1.Init.Parity = UART_PARITY_NONE;
-    IO_USART1.Init.Mode = UART_MODE_TX_RX;
-    IO_USART1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    IO_USART1.Init.OverSampling = UART_OVERSAMPLING_16;
-    IO_USART1.Init.OneBitSampling = UART_ONEBIT_SAMPLING_DISABLED;
-    IO_USART1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-
-    HAL_UART_Init(&IO_USART1);
-
-    /*串口1中断初始化 */
-    HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(USART1_IRQn);
-    /*配置串口接收中断 */
-    __HAL_UART_ENABLE_IT(&IO_USART1,UART_IT_RXNE);
-}
 
 /**
-  * @brief System Clock Configuration
+  * @brief  System Clock 配置
+  *         system Clock 配置如下:
+	*            System Clock source  = PLL (HSE)
+	*            SYSCLK(Hz)           = 400000000 (CPU Clock)
+	*            HCLK(Hz)             = 200000000 (AXI and AHBs Clock)
+	*            AHB Prescaler        = 2
+	*            D1 APB3 Prescaler    = 2 (APB3 Clock  100MHz)
+	*            D2 APB1 Prescaler    = 2 (APB1 Clock  100MHz)
+	*            D2 APB2 Prescaler    = 2 (APB2 Clock  100MHz)
+	*            D3 APB4 Prescaler    = 2 (APB4 Clock  100MHz)
+	*            HSE Frequency(Hz)    = 25000000
+	*            PLL_M                = 5
+	*            PLL_N                = 160
+	*            PLL_P                = 2
+	*            PLL_Q                = 4
+	*            PLL_R                = 2
+	*            VDD(V)               = 3.3
+	*            Flash Latency(WS)    = 4
+  * @param  None
   * @retval None
   */
 static void SystemClock_Config(void)
@@ -123,9 +90,12 @@ static void SystemClock_Config(void)
     }
     /** 初始化CPU、AHB和APB总线时钟
     */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                                  |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                                  |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK
+                                  |RCC_CLOCKTYPE_SYSCLK
+                                  |RCC_CLOCKTYPE_PCLK1
+                                  |RCC_CLOCKTYPE_PCLK2
+                                  |RCC_CLOCKTYPE_D3PCLK1
+                                  |RCC_CLOCKTYPE_D1PCLK1;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
@@ -142,17 +112,6 @@ static void SystemClock_Config(void)
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
-void IO_USART1_SendString(const char* str){
-    unsigned int k=0;
-    do
-    {
-//        while(HAL_UART_GetState(&IO_USART1)!=HAL_USART_STATE_READY);
-        HAL_UART_Transmit( &IO_USART1,(uint8_t *)(str + k) ,1,1000);
-//        HAL_USART_Transmit( &IO_USART1,(uint8_t *)(str + k) ,1,1000);
-        k++;
-    } while(*(str + k)!='\0');
-}
-
 void board_init(void)
 {
 //    SystemClock_Config();
@@ -165,7 +124,8 @@ void board_init(void)
     HAL_Init();
     SystemClock_Config();
 
-    IO_USART1_Init();
+    BSP_USART1_Init();
+    BSP_USART1_EnableDMA();
 
     NVIC_SetPriority(PendSV_IRQn, 0xFF);
     SysTick_Config(SystemCoreClock/CPU_TICKS_PER_SECOND); /* 1ms = tick */

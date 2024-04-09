@@ -20,6 +20,7 @@ rb_ret_t sdk_ringbuffer_init(sdk_ringbuffer_t *buffer, uint8_t *block, os_size_t
     buffer->write_offset = 0;
     buffer->buffer_size = size;
     buffer->buffer = block;
+    memset(buffer->buffer, 0, size);
     return kRB_RET_OK;
 }
 
