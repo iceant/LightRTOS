@@ -130,6 +130,9 @@ void board_init(void)
     BSP_USART1_Init();
     BSP_USART1_EnableDMA();
 
+    BSP_USART3_Init();
+    BSP_USART3_EnableDMA();
+
     NVIC_SetPriority(PendSV_IRQn, 0xFF);
     SysTick_Config(SystemCoreClock/CPU_TICKS_PER_SECOND); /* 1ms = tick */
 

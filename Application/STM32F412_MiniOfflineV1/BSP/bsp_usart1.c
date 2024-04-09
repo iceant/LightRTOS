@@ -69,14 +69,15 @@ void BSP_USART1_SetReceiveCallback(BSP_USART1_ReceiveCallback rxCallback, void* 
 
 void BSP_USART1_EnableDMA(void){
     /*开启DMA时钟*/
-    __DMA2_CLK_ENABLE();
+    __HAL_RCC_DMA2_CLK_ENABLE();
 
     BSP_USART1__DMAHandle.Instance = DMA2_Stream7;
+
     /* Deinitialize the stream for new transfer */
     HAL_DMA_DeInit(&BSP_USART1__DMAHandle);
 
-    /*usart1 tx对应dma2，通道4，数据流7*/
-//    BSP_USART1__DMAHandle.Init.Request = DMA_REQUEST_USART1_TX;
+    BSP_USART1__DMAHandle.Init.Channel = DMA_CHANNEL_4;
+
     /*方向：从内存到外设*/
     BSP_USART1__DMAHandle.Init.Direction= DMA_MEMORY_TO_PERIPH;
     /*外设地址不增*/
@@ -106,7 +107,6 @@ void BSP_USART1_EnableDMA(void){
     HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
-
     /* Associate the DMA handle */
     __HAL_LINKDMA(&BSP_USART1__Handle, hdmatx, BSP_USART1__DMAHandle);
     __HAL_DMA_ENABLE_IT(&BSP_USART1__DMAHandle, DMA_IT_TC);
@@ -117,7 +117,7 @@ void BSP_USART1_EnableDMA(void){
 void BSP_USART1_DMA_Send(uint8_t * data, int size)
 {
     while (HAL_UART_GetState(&BSP_USART1__Handle) != HAL_UART_STATE_READY);
-    HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(&BSP_USART1__Handle, data, size);
+    HAL_UART_Transmit_DMA(&BSP_USART1__Handle, data, size);
 }
 
 
@@ -127,16 +127,17 @@ void BSP_USART1_DMA_Send(uint8_t * data, int size)
 
 void USART1_IRQHandler(void)
 {
-    //HAL_UART_IRQHandler(&BSP_USART1__Handle);
     uint8_t ch=0;
-
     if(__HAL_UART_GET_FLAG( &BSP_USART1__Handle, UART_FLAG_RXNE ) != RESET)
     {
         ch=( uint16_t)READ_REG(BSP_USART1__Handle.Instance->DR);
         if(BSP_USART1__RxCallback){
             BSP_USART1__RxCallback(ch, BSP_USART1__RxCallbackParameter);
         }
+        return;
     }
+
+    HAL_UART_IRQHandler(&BSP_USART1__Handle);
 }
 
 void DMA2_Stream7_IRQHandler(void){

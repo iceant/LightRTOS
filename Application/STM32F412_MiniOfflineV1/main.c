@@ -52,8 +52,8 @@ static os_thread_t Boot_Thread;
 static void Boot_Thread_Entry(void* p){
 //    BSP_USART1_SendString("Boot Thread Entry Enter...\n");
     const char* message = "Boot Thread Entry Enter...\n";
-    BSP_USART1_SendString(message);
-//    BSP_USART1_DMA_Send((uint8_t *)message, strlen(message));
+//    BSP_USART1_SendString(message);
+    BSP_USART1_DMA_Send((uint8_t *)message, strlen(message));
 
     /* -------------------------------------------------------------------------------------------------------------- */
     /* 初始化接收线程 */

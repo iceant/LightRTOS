@@ -22,6 +22,10 @@
 #include <bsp_usart1.h>
 #endif /*INCLUDED_BSP_USART1_H*/
 
+#ifndef INCLUDED_BSP_USART3_H
+#include <bsp_usart3.h>
+#endif /*INCLUDED_BSP_USART3_H*/
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
