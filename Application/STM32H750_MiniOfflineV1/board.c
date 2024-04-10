@@ -65,6 +65,8 @@ static void SystemClock_Config(void)
     /** 启用电源配置更新
     */
     HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
     /** 配置主内稳压器输出电压
     */
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
@@ -126,6 +128,9 @@ void board_init(void)
 
     BSP_USART1_Init();
     BSP_USART1_EnableDMA();
+
+    BSP_USART3_Init();
+    BSP_USART3_EnableDMA();
 
     NVIC_SetPriority(PendSV_IRQn, 0xFF);
     SysTick_Config(SystemCoreClock/CPU_TICKS_PER_SECOND); /* 1ms = tick */

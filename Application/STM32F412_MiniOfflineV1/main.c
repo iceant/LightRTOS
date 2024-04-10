@@ -28,12 +28,47 @@ static void USART1_RxCallback(uint8_t data, void* userdata)
 static void USART1_RxThreadEntry(void* parameter){
     while(1){
         os_sem_take(&USART1_RxSem, OS_WAIT_INFINITY);
-        if(sdk_ringbuffer_find_str(&USART1_RxBuffer, 0, "\r\n")!=-1){
+
+        if(sdk_ringbuffer_find_str(&USART1_RxBuffer, 0, "reboot")!=-1){
+            cpu_reboot();
+        }else if(sdk_ringbuffer_find_str(&USART1_RxBuffer, 0, "\r\n")!=-1){
             printf("[USART1] %s\r\n", USART1_RxBuffer.buffer);
             sdk_ringbuffer_reset(&USART1_RxBuffer);
         }
         if(sdk_ringbuffer_is_full(&USART1_RxBuffer)){
             sdk_ringbuffer_reset(&USART1_RxBuffer);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////
+#define USART3_RX_BLOCK_SZ 256
+#define USART3_RX_THREAD_STACK_SIZE 1024
+
+static uint8_t USART3_RxBlock[USART3_RX_BLOCK_SZ];
+static sdk_ringbuffer_t USART3_RxBuffer;
+
+__ALIGNED(OS_ALIGN_SIZE)
+static uint8_t USART3_RxThreadStack[USART3_RX_THREAD_STACK_SIZE];
+static os_thread_t USART3_RxThread;
+static os_sem_t USART3_RxSem;
+
+static void USART3_RxCallback(uint8_t data, void* userdata)
+{
+    sdk_ringbuffer_put(&USART3_RxBuffer, data);
+    os_sem_release(&USART3_RxSem);
+}
+
+static void USART3_RxThreadEntry(void* parameter){
+    while(1){
+        os_sem_take(&USART3_RxSem, OS_WAIT_INFINITY);
+        if(sdk_ringbuffer_find_str(&USART3_RxBuffer, 0, "\r\n")!=-1){
+            printf("[USART3] %s\r\n", USART3_RxBuffer.buffer);
+            sdk_ringbuffer_reset(&USART3_RxBuffer);
+        }
+        if(sdk_ringbuffer_is_full(&USART3_RxBuffer)){
+            sdk_ringbuffer_reset(&USART3_RxBuffer);
         }
     }
 }
@@ -61,9 +96,22 @@ static void Boot_Thread_Entry(void* p){
     os_sem_init(&USART1_RxSem, "USART1_RxSem", 0, OS_QUEUE_FIFO);
     BSP_USART1_SetReceiveCallback(USART1_RxCallback, 0);
 
-    os_thread_init(&USART1_RxThread, "USART1_RxThd", USART1_RxThreadEntry, 0, USART1_RxThreadStack, sizeof(USART1_RxThreadStack), 20, 10);
+    os_thread_init(&USART1_RxThread, "USART1_RxThd", USART1_RxThreadEntry, 0
+                   , USART1_RxThreadStack, sizeof(USART1_RxThreadStack), 20, 10);
     os_thread_startup(&USART1_RxThread);
     /* -------------------------------------------------------------------------------------------------------------- */
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+    /* 初始化 USART3 线程 */
+    sdk_ringbuffer_init(&USART3_RxBuffer, USART3_RxBlock, USART3_RX_BLOCK_SZ);
+    os_sem_init(&USART3_RxSem, "USART3_RxSem", 0, OS_QUEUE_FIFO);
+    BSP_USART3_SetReceiveCallback(USART3_RxCallback, 0);
+
+    os_thread_init(&USART3_RxThread, "USART3_RxThd", USART3_RxThreadEntry, 0
+                   , USART3_RxThreadStack, sizeof(USART3_RxThreadStack), 20, 10);
+    os_thread_startup(&USART3_RxThread);
+    /* -------------------------------------------------------------------------------------------------------------- */
+
 
     int nCount = 0;
     while(1){

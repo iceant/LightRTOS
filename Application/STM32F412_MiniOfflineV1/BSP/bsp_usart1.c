@@ -134,7 +134,6 @@ void USART1_IRQHandler(void)
         if(BSP_USART1__RxCallback){
             BSP_USART1__RxCallback(ch, BSP_USART1__RxCallbackParameter);
         }
-        return;
     }
 
     HAL_UART_IRQHandler(&BSP_USART1__Handle);

@@ -25,7 +25,7 @@ void BSP_USART3_Init(void)
     /* 配置Tx引脚为复用功能  */
     GPIO_InitStruct.Pin = GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -102,13 +102,23 @@ void BSP_USART3_SetReceiveCallback(BSP_USART3_ReceiveCallback rxCallback, void* 
 
 void BSP_USART3_DMA_Send(uint8_t * data, int size){
     while (HAL_UART_GetState(&BSP_USART3__Handle) != HAL_UART_STATE_READY);
-    HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(&BSP_USART3__Handle, data, size);
+    HAL_UART_Transmit_DMA(&BSP_USART3__Handle, data, size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
 void USART3_IRQHandler(void){
+    uint8_t ch=0;
+    if(__HAL_UART_GET_FLAG( &BSP_USART3__Handle, UART_FLAG_RXNE ) != RESET)
+    {
+        ch=( uint16_t)READ_REG(BSP_USART3__Handle.Instance->DR);
+        if(BSP_USART3__RxCallback){
+            BSP_USART3__RxCallback(ch, BSP_USART3__RxCallbackParameter);
+        }
+        return;
+    }
+
     HAL_UART_IRQHandler(&BSP_USART3__Handle);
 }
 

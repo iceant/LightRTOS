@@ -77,7 +77,7 @@ void BSP_USART1_SetReceiveCallback(BSP_USART1_ReceiveCallback rxCallback, void* 
 
 void BSP_USART1_EnableDMA(void){
     /*开启DMA时钟*/
-    __DMA2_CLK_ENABLE();
+    __HAL_RCC_DMA2_CLK_ENABLE();
 
     BSP_USART1__DMAHandle.Instance = DMA2_Stream7;
     /* Deinitialize the stream for new transfer */
@@ -124,8 +124,8 @@ void BSP_USART1_EnableDMA(void){
 ////
 void BSP_USART1_DMA_Send(uint8_t * data, int size)
 {
+    HAL_UART_Transmit_DMA(&BSP_USART1__Handle, data, size);
     while (HAL_UART_GetState(&BSP_USART1__Handle) != HAL_UART_STATE_READY);
-    HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(&BSP_USART1__Handle, data, size);
 }
 
 
