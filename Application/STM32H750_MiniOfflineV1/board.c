@@ -111,6 +111,55 @@ static void SystemClock_Config(void)
         while(1);
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////
+static DS1307_IO_T DS1307__IO={.reset=0, .send=BSP_I2C1_MasterSend, .recv=BSP_I2C1_MasterReceive};
+
+////////////////////////////////////////////////////////////////////////////////
+////
+/* ------------------------------------------------------------------------------------------------------------------ */
+static void A7670C_PwrKeyPin_On(void){
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);
+}
+static void A7670C_PwrKeyPin_Off(void){
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);
+}
+static uint8_t A7670C_PwrKeyPin_Read(void){
+    return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_4);
+}
+static A7670C_Pin_T A7670C_PwrKeyPin = {.on = A7670C_PwrKeyPin_On, .off = A7670C_PwrKeyPin_Off, .read = A7670C_PwrKeyPin_Read };
+/* ------------------------------------------------------------------------------------------------------------------ */
+static void A7670C_PwrEnPin_On(void){
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);
+}
+static void A7670C_PwrEnPin_Off(void){
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
+}
+static uint8_t A7670C_PwrEnPin_Read(void){
+    return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2);
+}
+static A7670C_Pin_T A7670C_PwrEnPin = {.on = A7670C_PwrEnPin_On, .off = A7670C_PwrEnPin_Off, .read = A7670C_PwrEnPin_Read };
+/* ------------------------------------------------------------------------------------------------------------------ */
+static void A7670C_NetPin_On(void){
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_SET);
+}
+static void A7670C_NetPin_Off(void){
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);
+}
+static uint8_t A7670C_NetPin_Read(void){
+    return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3);
+}
+static A7670C_Pin_T A7670C_NetPin = {.on = A7670C_NetPin_On, .off = A7670C_NetPin_Off, .read = A7670C_NetPin_Read };
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+
+
+static A7670C_IO_T A7670C_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_USART2_SetRxHandler,
+        .setDefaultRxHandler = (void (*)(void *, void *)) BSP_USART2_SetDefaultRxHandler,
+        .wait=BSP_USART2_TimeWait,
+        .send=BSP_USART2_SendBytes,
+        .notify = BSP_USART2_Notify};
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -126,14 +175,25 @@ void board_init(void)
     HAL_Init();
     SystemClock_Config();
 
+    /* -------------------------------------------------------------------------------------------------------------- */
     BSP_USART1_Init();
     BSP_USART1_EnableDMA();
+
+    BSP_USART2_Init();
+    BSP_USART2_EnableDMA();
 
     BSP_USART3_Init();
     BSP_USART3_EnableDMA();
 
+    BSP_I2C1_Init();
+    BSP_I2C1_EnableDMA();
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+    DS1307_Init(&DS1307__IO);
+
+    A7670C_Init(&A7670C_PwrEnPin, &A7670C_PwrKeyPin, &A7670C_NetPin, 0, &A7670C_IO);
+
     NVIC_SetPriority(PendSV_IRQn, 0xFF);
     SysTick_Config(SystemCoreClock/CPU_TICKS_PER_SECOND); /* 1ms = tick */
-
 
 }

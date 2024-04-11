@@ -27,6 +27,21 @@
 #include <bsp_usart3.h>
 #endif /*INCLUDED_BSP_USART3_H*/
 
+#ifndef INCLUDED_BSP_I2C1_H
+#include <bsp_i2c1.h>
+#endif /*INCLUDED_BSP_I2C1_H*/
+
+#ifndef INCLUDED_BSP_USART2_H
+#include <bsp_usart2.h>
+#endif /*INCLUDED_BSP_USART2_H*/
+
+#ifndef INCLUDED_DS1307_H
+#include <DS1307.h>
+#endif /*INCLUDED_DS1307_H*/
+
+#ifndef INCLUDED_A7670C_H
+#include <A7670C.h>
+#endif /*INCLUDED_A7670C_H*/
 
 
 ////////////////////////////////////////////////////////////////////////////////

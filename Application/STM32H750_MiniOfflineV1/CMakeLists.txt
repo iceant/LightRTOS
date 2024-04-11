@@ -44,53 +44,57 @@ foreach (item IN LISTS HARDWARE_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
+file(GLOB DS1307_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/DS1307/*.c)
+foreach (item IN LISTS DS1307_SOURCES)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
 ########################################################################################################################
-file(GLOB DEVICE_A7670C_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/Common/*.c)
+file(GLOB DEVICE_A7670C_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/Common/*.c)
 foreach (item IN LISTS DEVICE_A7670C_COMMON_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_A7670C_HTTP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/HTTP/*.c)
+file(GLOB DEVICE_A7670C_HTTP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/HTTP/*.c)
 foreach (item IN LISTS DEVICE_A7670C_HTTP_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_A7670C_INTERNET_SERVICE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/InternetService/*.c)
+file(GLOB DEVICE_A7670C_INTERNET_SERVICE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/InternetService/*.c)
 foreach (item IN LISTS DEVICE_A7670C_INTERNET_SERVICE_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_A7670C_MQTT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/MQTT/*.c)
+file(GLOB DEVICE_A7670C_MQTT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/MQTT/*.c)
 foreach (item IN LISTS DEVICE_A7670C_MQTT_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_A7670C_NETWORK_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/Network/*.c)
+file(GLOB DEVICE_A7670C_NETWORK_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/Network/*.c)
 foreach (item IN LISTS DEVICE_A7670C_NETWORK_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_A7670C_PACKET_DOMAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/PacketDomain/*.c)
+file(GLOB DEVICE_A7670C_PACKET_DOMAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/PacketDomain/*.c)
 foreach (item IN LISTS DEVICE_A7670C_PACKET_DOMAIN_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_A7670C_SIM_CARD_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/SIMCard/*.c)
+file(GLOB DEVICE_A7670C_SIM_CARD_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/SIMCard/*.c)
 foreach (item IN LISTS DEVICE_A7670C_SIM_CARD_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_A7670C_STATUS_CONTROL_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/StatusControl/*.c)
+file(GLOB DEVICE_A7670C_STATUS_CONTROL_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/StatusControl/*.c)
 foreach (item IN LISTS DEVICE_A7670C_STATUS_CONTROL_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_A7670C_V25TER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/V25TER/*.c)
+file(GLOB DEVICE_A7670C_V25TER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/V25TER/*.c)
 foreach (item IN LISTS DEVICE_A7670C_STATUS_CONTROL_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
 
-file(GLOB DEVICE_A7670C_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/*.c)
+file(GLOB DEVICE_A7670C_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/*.c)
 foreach (item IN LISTS DEVICE_A7670C_SOURCES)
     message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
 endforeach ()
@@ -105,6 +109,7 @@ target_sources(${PROJECT_NAME}
         PUBLIC ${SOURCES}
         PUBLIC ${BSP_SOURCES}
         PUBLIC ${HARDWARE_SOURCES}
+        PUBLIC ${DS1307_SOURCES}
 
         PUBLIC ${DEVICE_A7670C_SOURCES}
         PUBLIC ${DEVICE_A7670C_COMMON_SOURCES}
@@ -125,17 +130,18 @@ target_sources(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/BSP)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Hardware)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/DS1307)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/Common)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/HTTP)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/InternetService)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/MQTT)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/Network)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/PacketDomain)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/SIMCard)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/StatusControl)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Device/A7670C/V25TER)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/Common)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/HTTP)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/InternetService)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/MQTT)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/Network)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/PacketDomain)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/SIMCard)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/StatusControl)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Devices/A7670C/V25TER)
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC STM32H750x_HAL

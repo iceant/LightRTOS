@@ -1,0 +1,18 @@
+#ifndef INCLUDED_TASK_NTP_H
+#define INCLUDED_TASK_NTP_H
+
+////////////////////////////////////////////////////////////////////////////////
+////
+#ifndef INCLUDED_OS_KERNEL_H
+#include <os_kernel.h>
+#endif /*INCLUDED_OS_KERNEL_H*/
+
+////////////////////////////////////////////////////////////////////////////////
+////
+void TaskNTP_Init(void);
+
+void TaskNTP_Update(void);
+
+
+
+#endif /*INCLUDED_TASK_NTP_H*/
