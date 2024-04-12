@@ -6,10 +6,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 ////
 #define HW_USARTx USART2
-#define HW_USARTx_TxGPIO GPIOB
-#define HW_USARTx_TxPIN  GPIO_PIN_4
-#define HW_USARTx_RxGPIO GPIOB
-#define HW_USARTx_RxPIN  GPIO_PIN_5
+#define HW_USARTx_TxGPIO GPIOA
+#define HW_USARTx_TxPIN  GPIO_PIN_2
+#define HW_USARTx_RxGPIO GPIOA
+#define HW_USARTx_RxPIN  GPIO_PIN_3
 #define HW_USARTx_BAUDRATE  115200
 
 #define USART2_RX_BLOCK_SIZE 1024

@@ -66,12 +66,15 @@ static void SystemClock_Config(void)
     */
     HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
 
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+    while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+
     __HAL_RCC_SYSCFG_CLK_ENABLE();
-    /** 配置主内稳压器输出电压
-    */
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
     while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+
     /** 初始化CPU、AHB和APB总线时钟
     */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
@@ -81,7 +84,7 @@ static void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLM = 5;
     RCC_OscInitStruct.PLL.PLLN = 192;
     RCC_OscInitStruct.PLL.PLLP = 2;
-    RCC_OscInitStruct.PLL.PLLQ = 2;
+    RCC_OscInitStruct.PLL.PLLQ = 12;
     RCC_OscInitStruct.PLL.PLLR = 2;
     RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
@@ -153,13 +156,12 @@ static uint8_t A7670C_NetPin_Read(void){
 static A7670C_Pin_T A7670C_NetPin = {.on = A7670C_NetPin_On, .off = A7670C_NetPin_Off, .read = A7670C_NetPin_Read };
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-
-
 static A7670C_IO_T A7670C_IO = {.setRxHandler=(void (*)(void *, void *)) BSP_USART2_SetRxHandler,
         .setDefaultRxHandler = (void (*)(void *, void *)) BSP_USART2_SetDefaultRxHandler,
         .wait=BSP_USART2_TimeWait,
         .send=BSP_USART2_SendBytes,
         .notify = BSP_USART2_Notify};
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -176,6 +178,8 @@ void board_init(void)
     SystemClock_Config();
 
     /* -------------------------------------------------------------------------------------------------------------- */
+    /* Onboard IO Configuration */
+    /* -------------------------------------------------------------------------------------------------------------- */
     BSP_USART1_Init();
     BSP_USART1_EnableDMA();
 
@@ -188,11 +192,17 @@ void board_init(void)
     BSP_I2C1_Init();
     BSP_I2C1_EnableDMA();
 
+    BSP_CAN1_Init();
+    /* -------------------------------------------------------------------------------------------------------------- */
+    /* Hardware Device Support */
     /* -------------------------------------------------------------------------------------------------------------- */
     DS1307_Init(&DS1307__IO);
 
     A7670C_Init(&A7670C_PwrEnPin, &A7670C_PwrKeyPin, &A7670C_NetPin, 0, &A7670C_IO);
 
+    /* -------------------------------------------------------------------------------------------------------------- */
+    /* OS Support */
+    /* -------------------------------------------------------------------------------------------------------------- */
     NVIC_SetPriority(PendSV_IRQn, 0xFF);
     SysTick_Config(SystemCoreClock/CPU_TICKS_PER_SECOND); /* 1ms = tick */
 

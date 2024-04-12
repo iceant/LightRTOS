@@ -3,6 +3,7 @@
 #include <os_kernel.h>
 #include <stdio.h>
 #include <bmp.h>
+#include <sdk_hex.h>
 
 #if 1
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,11 +117,6 @@ static void thread1_entry(void* p){
     os_size_t timeout_ms = (os_size_t)p;
     os_size_t nCount = 0;
     
-    ESP01S_Connect(&ESP01S_Device, "PIZER_WLS", "1234567890", 12000);
-    ESP01S_CWMODE_Set(&ESP01S_Device, 1, 12000);
-    ESP01S_CIPSNTPCFG(&ESP01S_Device, 8, 12000);
-    
-    NTP_Sync();
 
     
 //    os_thread_init(&thread2, "Thread2", thread_worker_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
@@ -130,6 +126,12 @@ static void thread1_entry(void* p){
 //    os_thread_startup(&thread3);
 //
 
+#if 0
+    ESP01S_Connect(&ESP01S_Device, "PIZER_WLS", "1234567890", 12000);
+    ESP01S_CWMODE_Set(&ESP01S_Device, 1, 12000);
+    ESP01S_CIPSNTPCFG(&ESP01S_Device, 8, 12000);
+
+    NTP_Sync();
 
     while(1){
 
@@ -145,7 +147,28 @@ static void thread1_entry(void* p){
 //        os_thread_sleep(1); /*调用 sleep 会让出 CPU，其它任务会获得执行机会*/
 //        os_thread_yield();
     }
-    
+#endif
+    const char* message = "Message from USART2\r\n";
+    while(1){
+        printf("Thread:%s, nCount=%d\n", os_thread_self()->name, nCount++);
+        BSP_USART2_Send(message, strlen(message));
+
+        uint8_t CAN_Tx_Frame1_Data[8]={0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8};
+        CanTxMessage CAN_TxMessage;
+        CAN_TxMessage.ExtId=0x12345678;
+        CAN_TxMessage.IDE=CAN_ID_EXT;
+        CAN_TxMessage.RTR=CAN_RTRQ_DATA;
+        CAN_TxMessage.DLC=8;
+        for(int i=0; i<8; i++){
+            CAN_TxMessage.Data[i] = CAN_Tx_Frame1_Data[i];
+        }
+        sdk_hex_dump("CAN", &CAN_TxMessage, sizeof(CAN_TxMessage));
+
+        int CAN1_SendResult = BSP_CAN1_Send(&CAN_TxMessage);
+        printf("[CAN] Send Result:%d\r\n", CAN1_SendResult);
+
+        os_thread_mdelay(1000);
+    }
 //    while(1){
 //        OLED_ShowDateTime();
 //        os_thread_mdelay(1000);
@@ -167,6 +190,10 @@ static void USART1__RxHandler(sdk_ringbuffer_t * buffer, void* userdata){
     }
 }
 
+static void CAN1__RxHandler(CanRxMessage* message, void* userdata)
+{
+    sdk_hex_dump("CAN1RX", message, sizeof(*message));
+}
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -174,7 +201,8 @@ int main(void){
     board_init();
     
     BSP_USART1_SetRxHandler(USART1__RxHandler, 0);
-    
+    BSP_CAN1_SetRxHandler(CAN1__RxHandler, 0);
+
     os_kernel_init();
 
     /*
@@ -186,10 +214,12 @@ int main(void){
      * */
     os_thread_init(&thread1, "Thread1", thread1_entry, (void*)1000, thread1_stack, sizeof(thread1_stack), 10, 10);
     os_thread_startup(&thread1);
-    
+
+#if 0
     os_thread_init(&oled_thread, "OLED", OLED_ThreadEntry, 0, oled_thread_stack, sizeof(oled_thread_stack), 10, 10);
     os_thread_startup(&oled_thread);
-    
+#endif
+
 //    os_thread_init(&thread2, "Thread2", thread1_entry, 200, thread2_stack, sizeof(thread2_stack), 10, 10);
 //    os_thread_startup(&thread2);
 //

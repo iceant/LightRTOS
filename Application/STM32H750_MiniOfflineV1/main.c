@@ -15,10 +15,16 @@ static void USART3_ThreadEntry(void* parameter)
 {
     int nCount = 0;
     const char * message = "Hello From STM32H750\r\n";
+    uint8_t CAN_Data[]={0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
     while(1){
 //        BSP_USART3_SendString("Hello From STM32H750\r\n");
         BSP_USART3_DMA_Send((uint8_t*)message, strlen(message));
-        printf("USART3 Send %d...\r\n", nCount++);
+        printf("USART3 Send %d...\r\n", nCount);
+
+        BSP_CAN1_Send(0x12345678, FDCAN_EXTENDED_ID, FDCAN_DATA_FRAME, CAN_Data, sizeof(CAN_Data));
+        printf("CAN1 Send %d...\r\n", nCount);
+
+        nCount++;
         os_thread_mdelay(1000);
     }
 }
@@ -85,8 +91,8 @@ int main(void){
     board_init();
 
     const char* message = "Board Init Finished!\r\n";
-//    BSP_USART1_SendString(message);
-    BSP_USART1_DMA_Send((uint8_t *)message, strlen(message));
+    BSP_USART1_SendString(message);
+//    BSP_USART1_DMA_Send((uint8_t *)message, strlen(message));
 
     os_kernel_init();
 

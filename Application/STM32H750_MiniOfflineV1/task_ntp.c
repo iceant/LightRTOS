@@ -40,7 +40,7 @@ void TaskNTP_Update(void)
         && (datetime.day>0 && datetime.day<32)
         && (datetime.hour>=0 && datetime.hour<24)
         && (datetime.min>=0 && datetime.min<60)
-        && (datetime.sec>=0 && datetime.sec<60)
+        && (datetime.sec>=0 && datetime.sec<58)
         ){
         DS1307_SetYear(datetime.year);
         DS1307_SetMonth(datetime.month);

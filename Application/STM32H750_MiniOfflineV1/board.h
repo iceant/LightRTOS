@@ -35,6 +35,17 @@
 #include <bsp_usart2.h>
 #endif /*INCLUDED_BSP_USART2_H*/
 
+#ifndef INCLUDED_BSP_CAN1_H
+#include <bsp_can1.h>
+#endif /*INCLUDED_BSP_CAN1_H*/
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+
+
 #ifndef INCLUDED_DS1307_H
 #include <DS1307.h>
 #endif /*INCLUDED_DS1307_H*/

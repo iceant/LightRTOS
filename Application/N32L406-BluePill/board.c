@@ -69,14 +69,18 @@ void board_init(void)
     BSP_USART1_Init();
     BSP_I2C1_Init();
     BSP_USART2_Init();
-    
+    BSP_CAN1_Init();
+
     /* Device Configuration */
 //    DS1307_Init(&DS1307_DeviceIO);
+#if 0
     DS1302_Init();
     ESP01S_Init(&ESP01S_Device, &ESP01S_DeviceIO);
     OLED_Init(&OLED_IO);
     BSP_I2C1_SetTimeoutHandler(OLED_IO_TimeoutHandler, 0);
     OLED_TurnOn();
+#endif
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

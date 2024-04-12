@@ -34,6 +34,16 @@
 #include <bsp_i2c1.h>
 #endif /*INCLUDED_BSP_I2C1_H*/
 
+#ifndef INCLUDED_BSP_CAN1_H
+#include <bsp_can1.h>
+#endif /*INCLUDED_BSP_CAN1_H*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+
+
 #ifndef INCLUDED_DS1302_H
 #include <DS1302.h>
 #endif /*INCLUDED_DS1302_H*/
