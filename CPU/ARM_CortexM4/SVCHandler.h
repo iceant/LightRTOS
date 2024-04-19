@@ -12,9 +12,13 @@
 ////
 extern volatile cpu_uintptr_t svc_exc_return;
 
+typedef void (*SVC_Handler_Function)(void);
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
 void SVC_Handler_C(unsigned  int * svc_args);
+
+void SVC_Handler_Set(uint8_t idx, SVC_Handler_Function fn);
 
 #endif /*INCLUDED_SVCHANDLER_H*/

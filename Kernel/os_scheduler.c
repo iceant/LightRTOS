@@ -21,6 +21,7 @@ static volatile os_thread_t* os_scheduler__current_thread=0;
 static os_list_t os_scheduler__ready_table[OS_PRIORITY_MAX]={0};
 static volatile os_bool_t os_scheduler__init_flag = OS_FALSE;
 //static volatile int os_scheduler__ctrl_flag = 0;
+static volatile os_bool_t os_scheduler__disable_flag = OS_FALSE;
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -126,6 +127,10 @@ os_err_t os_scheduler_init(void){
 
 os_err_t os_scheduler_schedule(void)
 {
+    if(os_scheduler__disable_flag == OS_TRUE){
+        return OS_EOK;
+    }
+
     register volatile os_thread_t * curr_thread=0;
     os_thread_t * next_thread=0;
     register volatile void** curr_stack_p = 0;
@@ -267,4 +272,18 @@ volatile os_tick_t os_scheduler_get_current_tick(void){
 
 os_bool_t os_scheduler_is_ready(void){
     return (os_scheduler__init_flag==OS_TRUE && os_scheduler__current_thread!=0)?OS_TRUE:OS_FALSE;
+}
+
+void os_scheduler_disable(void)
+{
+    OS_SCHEDULER_LOCK();
+    os_scheduler__disable_flag = OS_TRUE;
+    OS_SCHEDULER_UNLOCK();
+}
+
+void os_scheduler_enable(void){
+    OS_SCHEDULER_LOCK();
+    os_scheduler__disable_flag = OS_FALSE;
+    OS_SCHEDULER_UNLOCK();
+    os_scheduler_schedule();
 }

@@ -47,4 +47,8 @@ os_bool_t os_scheduler_is_ready(void);
 
 //void os_scheduler_ctrl(int ctrl_flag);
 
+void os_scheduler_disable(void);
+
+void os_scheduler_enable(void);
+
 #endif /*INCLUDED_OS_SCHEDULER_H*/

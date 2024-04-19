@@ -1,9 +1,10 @@
 pack:
+  - ../../Packs/Keil.STM32F4xx_DFP.2.17.1.pack
   - ../../Packs/Keil.STM32H7xx_DFP.3.1.1.pack
 #  - ../../Packs/Nationstech.N32L40x_DFP.0.9.0.pack
 #  - ../../Packs/Nationstech.N32G45x_DFP.1.0.6.pack
 
-target_override: STM32H750VBTx
+target_override: STM32F412RETx
 
 #probes:
 #  601012352:

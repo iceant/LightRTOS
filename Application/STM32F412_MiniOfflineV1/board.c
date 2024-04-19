@@ -1,6 +1,7 @@
 #include "board.h"
 #include <string.h>
 #include <os_kernel.h>
+#include <stdio.h>
 
 
 
@@ -19,6 +20,7 @@
 PUTCHAR_PROTOTYPE
 {
     HAL_UART_Transmit(&BSP_USART1__Handle, (uint8_t *)&ch, 1, 1000);
+//    BSP_USART1_DMA_Send(&ch, 1);
     return (ch);
 }
 
@@ -112,16 +114,38 @@ static void SystemClock_Config(void)
         Error_Handler();
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////
+
+
+//static ADS1256_IO_T ADS1256__IO = {.RST_High=BSP_ADS1256IO_RST_High,
+//                                   .RST_Low = BSP_ADS1256IO_RST_Low,
+//                                   .CS_High = BSP_ADS1256IO_CS_High,
+//                                   .CS_Low = BSP_ADS1256IO_CS_Low,
+//                                   .SetScanFunction = BSP_ADS1256IO_SetScanFunction,
+//                                   .StartScan = 0,
+//                                   .StopScan = 0,
+//                                   .DRDY_Read = BSP_ADS1256IO_DRDY_Read,
+//                                   .DOUT_Read = BSP_ADS1256IO_DOUT_Read,
+//                                   .DIN_Low = BSP_ADS1256IO_DIN_Low,
+//                                   .DIN_High = BSP_ADS1256IO_DIN_High,
+//                                   .SCLK_High = BSP_ADS1256IO_SCLK_High,
+//                                   .SCLK_Low = BSP_ADS1256IO_SCLK_Low
+//};
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
 void board_init(void)
 {
     SCB->CCR|=SCB_CCR_STKALIGN_Msk; // 栈对齐
+    SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));
+
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
 
     HAL_Init();
-    __HAL_RCC_SYSCFG_CLK_ENABLE();
-    __HAL_RCC_PWR_CLK_ENABLE();
     SystemClock_Config();
 
     /* Configure the NVIC Preemption Priority Bits */
@@ -133,7 +157,35 @@ void board_init(void)
     BSP_USART3_Init();
     BSP_USART3_EnableDMA();
 
+//    BSP_SPI1_Init();
+
+#if 0
+    printf("BSP_DWTDelay Init...\r\n");
+    BSP_DWTDelay_Init();
+    printf("BSP_DWTDelay Init Done!\r\n");
+#endif
+
+    printf("BSP_TimerDelay_Init ...\r\n");
+    BSP_TimerDelay_Init();
+    printf("BSP_TimerDelay_Init Done!\r\n");
+
+#if 0
+    printf("BSP_ADS1256IO_Init...\r\n");
+    BSP_ADS1256IO_Init();
+    printf("BSP_ADS1256IO_Init Done!\r\n");
+#endif
+
+    printf("ADS1256_Init...\r\n");
+//    ADS1256_Init(&ADS1256__IO);
+//    ADS125X_Init(&ADS1256, &BSP_SPI1__Handle, ADS125X_DRATE_2_5SPS, ADS125X_PGA1, 0);
+    ADS1256_Init();
+    ADS1256_CfgADC(ADS125X_PGA1, ADS125X_DRATE_2_5SPS);	//配置ADC参数： 增益1:1, 数据输出速率 15Hz
+    printf("ADS1256_Init Done!\r\n");
+
+
     NVIC_SetPriority(PendSV_IRQn, 0xFF);
     SysTick_Config(SystemCoreClock/CPU_TICKS_PER_SECOND); /* 1ms = tick */
 
 }
+
+

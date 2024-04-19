@@ -1,6 +1,6 @@
 #include <os_kernel.h>
 #include "os_idle.h"
-
+#include <SVCHandler.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -49,4 +49,10 @@ os_err_t  os_kernel_startup(void)
 os_bool_t os_kernel_is_startup(void){
     return (os_kernel__startup_flag==FLAG_DONE && os_scheduler_current_thread()!=0)?OS_TRUE:OS_FALSE;
 }
+
+void os_kernel_register_service(uint8_t code, OS_ServiceFunction fn)
+{
+    SVC_Handler_Set(code, fn);
+}
+
 

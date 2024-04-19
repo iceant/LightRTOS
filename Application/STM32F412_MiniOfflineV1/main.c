@@ -3,7 +3,7 @@
 #include <os_kernel.h>
 #include <stdio.h>
 #include <sdk_ringbuffer.h>
-
+#include <sdk_fmt.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,6 +26,7 @@ static void USART1_RxCallback(uint8_t data, void* userdata)
 }
 
 static void USART1_RxThreadEntry(void* parameter){
+    printf("USART1_RxThreadEntry Init...\r\n");
     while(1){
         os_sem_take(&USART1_RxSem, OS_WAIT_INFINITY);
 
@@ -61,10 +62,11 @@ static void USART3_RxCallback(uint8_t data, void* userdata)
 }
 
 static void USART3_RxThreadEntry(void* parameter){
+    printf("USART3_RxThreadEntry Init...\r\n");
     while(1){
         os_sem_take(&USART3_RxSem, OS_WAIT_INFINITY);
         if(sdk_ringbuffer_find_str(&USART3_RxBuffer, 0, "\r\n")!=-1){
-            printf("[USART3] %s\r\n", USART3_RxBuffer.buffer);
+//            printf("[USART3] %s\r\n", USART3_RxBuffer.buffer);
             sdk_ringbuffer_reset(&USART3_RxBuffer);
         }
         if(sdk_ringbuffer_is_full(&USART3_RxBuffer)){
@@ -81,17 +83,22 @@ __ALIGNED(OS_ALIGN_SIZE)
 static uint8_t Boot_Thread_stack[THREAD1_STACK_SIZE];
 static os_thread_t Boot_Thread;
 
+static int32_t ADS1256_ADC[8]={0};
+static int32_t ADS1256_ADC_V[8]={0};
+static double ADS1256_Vol[8] = {0};
 ////////////////////////////////////////////////////////////////////////////////
 ////
+
 
 static void Boot_Thread_Entry(void* p){
 //    BSP_USART1_SendString("Boot Thread Entry Enter...\n");
     const char* message = "Boot Thread Entry Enter...\n";
-//    BSP_USART1_SendString(message);
-    BSP_USART1_DMA_Send((uint8_t *)message, strlen(message));
+    BSP_USART1_SendString(message);
+//    BSP_USART1_DMA_Send((uint8_t *)message, strlen(message));
 
     /* -------------------------------------------------------------------------------------------------------------- */
     /* 初始化接收线程 */
+    /* -------------------------------------------------------------------------------------------------------------- */
     sdk_ringbuffer_init(&USART1_RxBuffer, USART1_RxBlock, USART1_RX_BLOCK_SZ);
     os_sem_init(&USART1_RxSem, "USART1_RxSem", 0, OS_QUEUE_FIFO);
     BSP_USART1_SetReceiveCallback(USART1_RxCallback, 0);
@@ -99,10 +106,10 @@ static void Boot_Thread_Entry(void* p){
     os_thread_init(&USART1_RxThread, "USART1_RxThd", USART1_RxThreadEntry, 0
                    , USART1_RxThreadStack, sizeof(USART1_RxThreadStack), 20, 10);
     os_thread_startup(&USART1_RxThread);
-    /* -------------------------------------------------------------------------------------------------------------- */
 
     /* -------------------------------------------------------------------------------------------------------------- */
     /* 初始化 USART3 线程 */
+    /* -------------------------------------------------------------------------------------------------------------- */
     sdk_ringbuffer_init(&USART3_RxBuffer, USART3_RxBlock, USART3_RX_BLOCK_SZ);
     os_sem_init(&USART3_RxSem, "USART3_RxSem", 0, OS_QUEUE_FIFO);
     BSP_USART3_SetReceiveCallback(USART3_RxCallback, 0);
@@ -110,13 +117,57 @@ static void Boot_Thread_Entry(void* p){
     os_thread_init(&USART3_RxThread, "USART3_RxThd", USART3_RxThreadEntry, 0
                    , USART3_RxThreadStack, sizeof(USART3_RxThreadStack), 20, 10);
     os_thread_startup(&USART3_RxThread);
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+    /* 主线程 */
     /* -------------------------------------------------------------------------------------------------------------- */
 
+    uint32_t nCount = 0;
 
-    int nCount = 0;
+    ADS1256_SetScanMode(ADS135X_SCAN_MODE_SIG);
+    int ch_num = 1;
+
+    char dis_buf[32];					// 显示缓冲区
+    char dis_buf2[32];					// 显示缓冲区
+    int32_t adc[8];					// 采样结果
+    int32_t adc_1[8];				//
+    unsigned long ulResult;
+    long double volt[8];					// 实际电压值
+
     while(1){
         printf("nCount:%d \r\n", nCount++);
+
+#if 1
+        for (int i = 0; i < ch_num; i++)
+        {
+
+            adc[i] = (int32_t)ADS1256_GetAdc(i);
+//            adc_1[i] = (adc[i] ^ 0x800000);				// 4194303 = 2.5V , 这是理论值，实际可以根据2.5V基准的实际值进行公式矫正
+//            volt[i] = (((0.596047*adc_1[i])-5000000)/1000000);  // 测量出来是以v作单位
+
+//            printf("CH%1d: %d(0x%08x)", i, adc[i], adc[i]); //发送数据
+//            printDouble(adc[i] * 0.000596046518808, 15);
+//            printf("\r\n");
+//            ftoa(adc[i] *  0.000596046518808 , fbuf, sizeof(fbuf));
+//            printf("CH%1d: %f\r\n", i, adc[i] *  0.000596046518808);
+
+//            sdk_fmt_print("CH:%d 0x%08x(%d) %f\r\n", i, adc[i], adc[i], (float)(adc[i] * 0.596046518808));
+//            if(adc[i]==0xffffffff || adc[i]==0x00001000 ||adc[i]==0x003fffff){
+//                printf("CH%d INVALID!!!\r\n", i);
+//                break;
+//            }
+//            volt[i] = (float)(adc[i]* 0.005960465188081880f);
+            volt[i] = (float)(adc[i]* 0.00736779931574194000f);
+            printf("CH:%d 0x%08x(%d) %s %s\r\n", i, adc[i], adc[i]
+                   , ftoa(volt[i], dis_buf, sizeof(dis_buf))
+                   , ftoa(volt[i] / 0.00332225913621262000f , dis_buf2, sizeof(dis_buf2))
+                   );
+        }
+//        printf("\r\n");
+
         os_thread_mdelay(1000);
+#endif
+
     }
 }
 
@@ -129,6 +180,12 @@ int main(void){
     const char* message = "Board Init Finished!\r\n";
     BSP_USART1_SendString(message);
 //    BSP_USART1_DMA_Send((uint8_t *)message, strlen(message));
+
+#if 0
+    printf("ADS1256_StartScan 1\r\n");
+    ADS1256_StartScan();
+    printf("ADS1256_StartScan 2\r\n");
+#endif
 
     os_kernel_init();
 

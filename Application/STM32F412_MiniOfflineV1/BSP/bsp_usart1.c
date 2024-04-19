@@ -118,6 +118,7 @@ void BSP_USART1_DMA_Send(uint8_t * data, int size)
 {
     while (HAL_UART_GetState(&BSP_USART1__Handle) != HAL_UART_STATE_READY);
     HAL_UART_Transmit_DMA(&BSP_USART1__Handle, data, size);
+    while (HAL_UART_GetState(&BSP_USART1__Handle) != HAL_UART_STATE_READY);
 }
 
 

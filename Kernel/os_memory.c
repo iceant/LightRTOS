@@ -44,21 +44,21 @@ void os_memory_free(void* ptr, const char* file, os_size_t line)
     }
 }
 
-void* malloc(os_size_t bytes){
-    return tlsf_malloc(bytes);
-}
-
-void* calloc(os_size_t n, os_size_t b){
-    return tlsf_calloc(n, b);
-}
-
-void* realloc(void* p, os_size_t b){
-    return tlsf_realloc(p, b);
-}
-
-void free(void* p){
-    tlsf_free(p);
-}
+//void* malloc(os_size_t bytes){
+//    return tlsf_malloc(bytes);
+//}
+//
+//void* calloc(os_size_t n, os_size_t b){
+//    return tlsf_calloc(n, b);
+//}
+//
+//void* realloc(void* p, os_size_t b){
+//    return tlsf_realloc(p, b);
+//}
+//
+//void free(void* p){
+//    tlsf_free(p);
+//}
 
 #endif
 

@@ -53,10 +53,11 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
           #            -fmessage-length=0
           #            -fshort-enums
   )
-  set(LINK_FLAGS -lc -lm -Wl,--gc-sections
+  set(LINK_FLAGS -lc -lm -Wl,--gc-sections -static
           -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map -Wl,--cref -Wl,--print-memory-usage
-          -specs=nano.specs
-          #            -specs=nosys.specs -lnosys
+          --specs=nano.specs
+          -u _printf_float
+#          --specs=nosys.specs -lnosys
   )
 
   #    add_compile_options(${CPU_FLAGS} ${COMPILER_FLAGS})
@@ -76,4 +77,4 @@ endforeach ()
 target_sources(${PROJECT_NAME} PUBLIC ${HAL_SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR})
 target_compile_options(${PROJECT_NAME} PUBLIC ${CPU_FLAGS} ${COMPILER_FLAGS})
-target_compile_definitions(${PROJECT_NAME} PUBLIC USE_HAL_DRIVER STM32F412Rx)
+target_compile_definitions(${PROJECT_NAME} PUBLIC USE_HAL_DRIVER STM32F412Rx STM32F4)

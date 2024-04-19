@@ -46,6 +46,11 @@
 
 #define OS_KERNEL_EMODULE_MEMORY        (-1001)
 #define OS_KERNEL_EMODULE_SCHEDULER     (-1002)
+
+////////////////////////////////////////////////////////////////////////////////
+////
+typedef void (*OS_ServiceFunction)(void);
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -54,5 +59,7 @@ os_err_t os_kernel_init(void);
 os_err_t  os_kernel_startup(void);
 
 os_bool_t os_kernel_is_startup(void);
+
+void os_kernel_register_service(uint8_t code, OS_ServiceFunction fn);
 
 #endif /*INCLUDED_OS_KERNEL_H*/
