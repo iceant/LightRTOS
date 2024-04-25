@@ -129,10 +129,15 @@ static void Boot_Thread_Entry(void* p){
 
     char dis_buf[32];					// 显示缓冲区
     char dis_buf2[32];					// 显示缓冲区
+    char dis_buf3[32];					// 显示缓冲区
     int32_t adc[8];					// 采样结果
     int32_t adc_1[8];				//
     unsigned long ulResult;
     long double volt[8];					// 实际电压值
+
+#define V_RATIO 0.50310559006211200000
+#define LSB 0.00597852457311875000
+
 
     while(1){
         printf("nCount:%d \r\n", nCount++);
@@ -157,10 +162,17 @@ static void Boot_Thread_Entry(void* p){
 //                break;
 //            }
 //            volt[i] = (float)(adc[i]* 0.005960465188081880f);
-            volt[i] = (float)(adc[i]* 0.00736779931574194000f);
-            printf("CH:%d 0x%08x(%d) %s %s\r\n", i, adc[i], adc[i]
+            volt[i] = (float)(adc[i]* LSB
+
+            );
+
+            float Vstd = 24988.0f;
+            float Vo = volt[i] / V_RATIO;
+            float Pv = (Vstd-Vo)/Vstd;
+            printf("CH:%d 0x%08x(%d) %s %s %s\r\n", i, adc[i], adc[i]
                    , ftoa(volt[i], dis_buf, sizeof(dis_buf))
-                   , ftoa(volt[i] / 0.00332225913621262000f , dis_buf2, sizeof(dis_buf2))
+                   , ftoa(Vo, dis_buf2, sizeof(dis_buf2))
+                   , ftoa(Pv, dis_buf3, sizeof(dis_buf3))
                    );
         }
 //        printf("\r\n");
